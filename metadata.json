@@ -1,0 +1,6 @@
+{
+  "name": "TELKOM AKSES BUSINESS DASHBOARD",
+  "description": "Dashboard Pemantauan Performansi Bisnis, Assurance, Provisioning, Quality Engineering, dan Teknisi Service Area Telkom Akses secara real-time.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
