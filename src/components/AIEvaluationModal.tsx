@@ -74,7 +74,7 @@ export default function AIEvaluationModal({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [source, setSource] = useState<string>('');
-  const [modelUsed, setModelUsed] = useState<string>('gemini-3.8-flash');
+  const [modelUsed, setModelUsed] = useState<string>('gemini-2.0-flash');
   const [notice, setNotice] = useState<string | null>(null);
   const [generatedAt, setGeneratedAt] = useState<string>('');
 

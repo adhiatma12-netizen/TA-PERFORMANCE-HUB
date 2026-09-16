@@ -57,7 +57,7 @@ async function generateGeminiEvaluation(
   // 1. gemini-3.1-flash-lite (High-throughput, low-latency, resistant to 503 capacity spikes)
   // 2. gemini-3.8-flash (Standard text model)
   // 3. gemini-flash-latest (Alias fallback)
-  const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+  const candidateModels = ['gemini-2.0-flash', 'gemini-1.5-flash'];
   let lastError: any = null;
 
   for (const model of candidateModels) {
@@ -337,7 +337,7 @@ ${JSON.stringify(trimmedRows, null, 2)}
 Susun laporan resume eksekutif analisis performansi secara lengkap, rapi, dan terstruktur sesuai format instruksi di atas.`;
 
     let evaluation = '';
-    let modelUsed = 'gemini-3.8-flash';
+    let modelUsed = 'gemini-2.0-flash';
     let source = 'gemini';
 
     try {
