@@ -456,7 +456,7 @@ export default function App() {
   };
 
   const handleDownloadPDF = () => {
-    alert(`📥 Mengunduh Laporan Eksekutif Performansi Telkom Akses (${activeRegional}) - Periode ${activeMonth} ${activeYear}.pdf`);
+    setShowPdfModal(true);
   };
 
   // Render Login Page if user is not logged in
@@ -550,10 +550,12 @@ export default function App() {
               {/* Download PDF Button */}
               <button
                 onClick={handleDownloadPDF}
-                className="hidden sm:flex items-center justify-center p-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors border border-slate-800 cursor-pointer shadow-2xs"
-                title="Download PDF Report"
+                className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 bg-red-600/90 hover:bg-red-600 text-white rounded-lg transition-all border border-red-500/80 cursor-pointer shadow-xs text-xs font-bold"
+                title="Download PDF Resume Performansi (Sesuai Halaman Aktif)"
+                id="btn-header-download-pdf"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3.5 h-3.5" />
+                <span>PDF Resume</span>
               </button>
 
               {/* Detail User (Nama & Role) */}
@@ -1302,11 +1304,25 @@ export default function App() {
             <button
               onClick={() => setShowPdfModal(true)}
               className="inline-flex items-center space-x-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all border shadow-xs cursor-pointer bg-red-600 hover:bg-red-700 text-white border-red-600 active:scale-95"
-              title="Download PDF Resume Performansi Operasional (Evaluasi Teknis, Non-Teknis, RCA & Rekomendasi)"
+              title="Download PDF Resume Performansi Operasional (Evaluasi Teknis, Non-Teknis, RCA & Rekomendasi Sesuai Halaman)"
               id="btn-download-pdf-resume-global"
             >
               <FileDown className="w-3.5 h-3.5" />
-              <span>Download PDF Resume Performansi</span>
+              <span>
+                Download PDF Resume ({
+                  activeTab === 'business'
+                    ? 'Bisnis'
+                    : activeTab === 'assurance'
+                    ? 'Assurance'
+                    : activeTab === 'provisioning'
+                    ? 'Provisioning'
+                    : activeTab === 'qe'
+                    ? 'QE Mutu'
+                    : activeTab === 'technician'
+                    ? 'Teknisi'
+                    : 'Kelola Data'
+                })
+              </span>
             </button>
             <button
               onClick={fetchLiveData}
@@ -1426,15 +1442,31 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Executive PDF Report Modal */}
+      {/* Executive PDF Report Modal (Domain-Aware with Comprehensive Evaluation & Supporting Tables) */}
       <ExecutivePdfReportModal
         isOpen={showPdfModal}
         onClose={() => setShowPdfModal(false)}
+        activeDomain={activeTab}
+        activeSubTab={
+          activeTab === 'business'
+            ? businessSubTab
+            : activeTab === 'assurance'
+            ? assuranceSubTab
+            : activeTab === 'provisioning'
+            ? provisioningSubTab
+            : activeTab === 'qe'
+            ? qeSubTab
+            : activeTab === 'technician'
+            ? technicianSubTab
+            : kelolaDataSubTab
+        }
         activeRegional={activeRegional}
-        totalTickets={currentData?.assurance?.totalTickets || 2649}
-        avgTtr={currentData?.assurance?.mttrHours || 17.15}
+        activeMonth={activeMonth}
+        activeYear={activeYear}
+        currentData={currentData}
+        allRegionsData={dataState}
+        provisioningData={provisioningData}
         uptime="99.99%"
-        stoStatus="OK (100%)"
       />
     </div>
   );
