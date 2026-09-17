@@ -824,186 +824,7 @@ export default function TicketEvaluationDashboard() {
   return (
     <div className="space-y-6" id="ticket-evaluation-dashboard-view">
       
-      {/* 1. TOP HEADER & TELEMETRY CONTROLS */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-950 text-white rounded-3xl p-6 shadow-xl border border-slate-800 relative overflow-hidden">
-        <div className="absolute -right-20 -top-20 w-72 h-72 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -left-20 -bottom-20 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 bg-red-600/20 text-red-400 border border-red-500/30 rounded-full text-[11px] font-bold tracking-wide uppercase flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-red-400" />
-                Sub-Halaman 3: Evaluasi Tiket Assurance
-              </span>
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${
-                isLive ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-                <span>{isLive ? 'Sinkronisasi Data Realtime' : 'Data Operasional Lengkap'}</span>
-              </span>
-              <span className="text-[11px] text-slate-400">
-                Pembaruan: <strong>{lastSyncTime}</strong>
-              </span>
-            </div>
-
-            <h3 className="text-2xl font-black tracking-tight text-slate-100 flex items-center gap-2.5">
-              <span>Evaluasi Mendalam Actual Solution & Segmentasi Gangguan</span>
-            </h3>
-
-            <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
-              Analisis komprehensif mengintegrasikan data <strong>Actual Solution</strong>, <strong>Subsegmentasi Masalah</strong>, <strong>Type Layanan</strong>, serta <strong>Trend Harian</strong> dengan matriks korelasi Sektor, STO, durasi penanganan (TTR), dan prioritas pelanggan.
-            </p>
-
-            {syncError && (
-              <div className="inline-flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 text-amber-300 px-3 py-1.5 rounded-xl text-xs mt-1">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{syncError} (Menggunakan data operasional lokal)</span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={loadLiveData}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-2xl text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
-              title="Segarkan data terbaru"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-red-400' : 'text-slate-300'}`} />
-              <span>{isLoading ? 'Menyinkronkan...' : 'Sinkronkan Data'}</span>
-            </button>
-
-            <button
-              onClick={handleExportCSV}
-              className="flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-2xl text-xs font-bold transition-all shadow-md shadow-red-600/20 active:scale-95 cursor-pointer"
-              title="Download data terfilter sebagai file CSV"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export CSV</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. EXECUTIVE KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" id="executive-kpi-cards">
-        
-        {/* Total Tiket Evaluasi */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Tiket Masuk</span>
-            <div className="p-2 bg-red-50 text-red-600 rounded-xl">
-              <Ticket className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <h4 className="text-3xl font-black text-slate-900 tracking-tight">{kpis.total.toLocaleString('id-ID')}</h4>
-            <div className="flex items-center gap-2 mt-1 text-[11px] font-semibold text-slate-500">
-              <span className="text-red-600">{kpis.regulerCount} Reguler</span>
-              <span>•</span>
-              <span className="text-blue-600">{kpis.sqmCount} SQM</span>
-            </div>
-          </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-            <span>HVC Customers</span>
-            <span className="font-bold text-amber-600 font-mono">{kpis.hvcCount} Tiket</span>
-          </div>
-        </div>
-
-        {/* Actual Solution Stats */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Actual Solutions</span>
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-              <Wrench className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <h4 className="text-3xl font-black text-slate-900 tracking-tight">{kpis.uniqueSolutions}</h4>
-            <p className="text-[11px] font-medium text-slate-500 mt-1">Variasi Solusi Teridentifikasi</p>
-          </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
-            <span className="text-slate-400">Auto SQM vs Fisik</span>
-            <span className="font-bold text-blue-600 font-mono">
-              {kpis.autoClosedCount} : {kpis.fieldRepairCount}
-            </span>
-          </div>
-        </div>
-
-        {/* Subsegmentasi Tiket */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Subsegmentasi Masalah</span>
-            <div className="p-2 bg-purple-50 text-purple-600 rounded-xl">
-              <Layers className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <h4 className="text-3xl font-black text-slate-900 tracking-tight">{kpis.uniqueSubsegmentasi}</h4>
-            <p className="text-[11px] font-medium text-purple-600 font-semibold truncate mt-1">
-              Top: {subsegmentasiSummary[0]?.name || '-'}
-            </p>
-          </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-            <span>Dominasi Top 1</span>
-            <span className="font-bold text-slate-700 font-mono">{subsegmentasiSummary[0]?.sharePercent || 0}%</span>
-          </div>
-        </div>
-
-        {/* Type Layanan */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Type Layanan</span>
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
-              <Radio className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-bold text-red-600">Internet:</span>
-              <span className="font-mono font-bold text-slate-800">{kpis.internetCount}</span>
-            </div>
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-bold text-blue-600">IPTV:</span>
-              <span className="font-mono font-bold text-slate-800">{kpis.iptvCount}</span>
-            </div>
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-bold text-emerald-600">Voice:</span>
-              <span className="font-mono font-bold text-slate-800">{kpis.voiceCount}</span>
-            </div>
-          </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-            <span>Dominasi Layanan</span>
-            <span className="font-bold text-slate-700 font-mono">
-              {kpis.total > 0 ? ((kpis.internetCount / kpis.total) * 100).toFixed(1) : 0}% Internet
-            </span>
-          </div>
-        </div>
-
-        {/* MTTR & Close Rate */}
-        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Rata-rata TTR & SLA</span>
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <h4 className="text-3xl font-black text-slate-900 tracking-tight">{formatTwoDigits(kpis.avgTtr)} <span className="text-sm font-bold text-slate-400">Jam</span></h4>
-            <p className="text-[11px] font-semibold text-emerald-600 mt-1">
-              Close Rate: {kpis.closeRate}%
-            </p>
-          </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-            <span>Status Closed</span>
-            <span className="font-bold text-slate-700 font-mono">{kpis.closedCount} Tiket</span>
-          </div>
-        </div>
-
-      </div>
-
-      {/* 3. MULTI-DIMENSIONAL FILTER TOOLBAR */}
+      {/* MULTI-DIMENSIONAL FILTER TOOLBAR */}
       <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm space-y-4" id="evaluation-filters">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
@@ -1152,6 +973,130 @@ export default function TicketEvaluationDashboard() {
             </button>
           )}
         </div>
+      </div>
+
+      {syncError && (
+        <div className="inline-flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 text-amber-700 px-3 py-1.5 rounded-xl text-xs">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+          <span>{syncError} (Menggunakan data operasional lokal)</span>
+        </div>
+      )}
+
+      {/* 2. EXECUTIVE KPI CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" id="executive-kpi-cards">
+        
+        {/* Total Tiket Evaluasi */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Tiket Masuk</span>
+            <div className="p-2 bg-red-50 text-red-600 rounded-xl">
+              <Ticket className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <h4 className="text-3xl font-black text-slate-900 tracking-tight">{kpis.total.toLocaleString('id-ID')}</h4>
+            <div className="flex items-center gap-2 mt-1 text-[11px] font-semibold text-slate-500">
+              <span className="text-red-600">{kpis.regulerCount} Reguler</span>
+              <span>•</span>
+              <span className="text-blue-600">{kpis.sqmCount} SQM</span>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <span>HVC Customers</span>
+            <span className="font-bold text-amber-600 font-mono">{kpis.hvcCount} Tiket</span>
+          </div>
+        </div>
+
+        {/* Actual Solution Stats */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Actual Solutions</span>
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+              <Wrench className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <h4 className="text-3xl font-black text-slate-900 tracking-tight">{kpis.uniqueSolutions}</h4>
+            <p className="text-[11px] font-medium text-slate-500 mt-1">Variasi Solusi Teridentifikasi</p>
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span className="text-slate-400">Auto SQM vs Fisik</span>
+            <span className="font-bold text-blue-600 font-mono">
+              {kpis.autoClosedCount} : {kpis.fieldRepairCount}
+            </span>
+          </div>
+        </div>
+
+        {/* Subsegmentasi Tiket */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Subsegmentasi Masalah</span>
+            <div className="p-2 bg-purple-50 text-purple-600 rounded-xl">
+              <Layers className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <h4 className="text-3xl font-black text-slate-900 tracking-tight">{kpis.uniqueSubsegmentasi}</h4>
+            <p className="text-[11px] font-medium text-purple-600 font-semibold truncate mt-1">
+              Top: {subsegmentasiSummary[0]?.name || '-'}
+            </p>
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <span>Dominasi Top 1</span>
+            <span className="font-bold text-slate-700 font-mono">{subsegmentasiSummary[0]?.sharePercent || 0}%</span>
+          </div>
+        </div>
+
+        {/* Type Layanan */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Type Layanan</span>
+            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+              <Radio className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <div className="flex justify-between items-center text-xs">
+              <span className="font-bold text-red-600">Internet:</span>
+              <span className="font-mono font-bold text-slate-800">{kpis.internetCount}</span>
+            </div>
+            <div className="flex justify-between items-center text-xs">
+              <span className="font-bold text-blue-600">IPTV:</span>
+              <span className="font-mono font-bold text-slate-800">{kpis.iptvCount}</span>
+            </div>
+            <div className="flex justify-between items-center text-xs">
+              <span className="font-bold text-emerald-600">Voice:</span>
+              <span className="font-mono font-bold text-slate-800">{kpis.voiceCount}</span>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <span>Dominasi Layanan</span>
+            <span className="font-bold text-slate-700 font-mono">
+              {kpis.total > 0 ? ((kpis.internetCount / kpis.total) * 100).toFixed(1) : 0}% Internet
+            </span>
+          </div>
+        </div>
+
+        {/* MTTR & Close Rate */}
+        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Rata-rata TTR & SLA</span>
+            <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
+              <Clock className="w-4 h-4" />
+            </div>
+          </div>
+          <div>
+            <h4 className="text-3xl font-black text-slate-900 tracking-tight">{formatTwoDigits(kpis.avgTtr)} <span className="text-sm font-bold text-slate-400">Jam</span></h4>
+            <p className="text-[11px] font-semibold text-emerald-600 mt-1">
+              Close Rate: {kpis.closeRate}%
+            </p>
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <span>Status Closed</span>
+            <span className="font-bold text-slate-700 font-mono">{kpis.closedCount} Tiket</span>
+          </div>
+        </div>
+
       </div>
 
       {/* 4. VIEW SECTIONS NAVIGATOR */}
