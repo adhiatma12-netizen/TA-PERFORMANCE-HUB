@@ -120,6 +120,33 @@ function parseDateParts(dateStr: string): { day: number; month: number; year: nu
   return { day, month, year, dateKey, label };
 }
 
+const MONTH_ORDER: { [key: string]: number } = {
+  januari: 1, jan: 1, january: 1,
+  februari: 2, feb: 2, february: 2,
+  maret: 3, mar: 3, march: 3,
+  april: 4, apr: 4,
+  mei: 5, may: 5,
+  juni: 6, jun: 6, june: 6,
+  juli: 7, jul: 7, july: 7,
+  agustus: 8, ags: 8, aug: 8, august: 8,
+  september: 9, sep: 9, okt: 10,
+  oktober: 10, oct: 10, october: 10,
+  november: 11, nov: 11,
+  desember: 12, des: 12, dec: 12, december: 12,
+};
+
+function getRecordMonth(t: AssuranceTicketRecord): string {
+  if (t.bulanRekap && t.bulanRekap.trim()) {
+    return t.bulanRekap.trim();
+  }
+  const dp = parseDateParts(t.troubleOpenTime);
+  if (dp) {
+    const monthNames = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    return monthNames[dp.month] || `Bulan ${dp.month}`;
+  }
+  return '';
+}
+
 export default function TicketEvaluationDashboard() {
   const [tickets, setTickets] = useState<AssuranceTicketRecord[]>(FALLBACK_ASSURANCE_TICKETS);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -134,7 +161,8 @@ export default function TicketEvaluationDashboard() {
   const [selectedTypeTiket, setSelectedTypeTiket] = useState<string>('ALL');
   const [selectedHvc, setSelectedHvc] = useState<string>('ALL');
   const [selectedSolutionCategory, setSelectedSolutionCategory] = useState<string>('ALL');
-  const [selectedDate, setSelectedDate] = useState<string>('ALL');
+  const [selectedBulan, setSelectedBulan] = useState<string>('ALL');
+  const [selectedDailyDrilldown, setSelectedDailyDrilldown] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Active sub-tab inside Evaluation view
@@ -182,7 +210,7 @@ export default function TicketEvaluationDashboard() {
         'Type Tiket': selectedTypeTiket,
         HVC: selectedHvc,
         Kategori: selectedSolutionCategory,
-        Tanggal: selectedDate,
+        Bulan: selectedBulan,
         ...customFilters,
       },
       summaryMetrics,
@@ -228,9 +256,14 @@ export default function TicketEvaluationDashboard() {
       if (selectedHvc !== 'ALL' && t.flagHvc !== selectedHvc) return false;
       if (selectedSolutionCategory !== 'ALL' && categorizeSolution(t.actualSolution) !== selectedSolutionCategory) return false;
       
-      if (selectedDate !== 'ALL') {
+      if (selectedBulan !== 'ALL') {
+        const b = getRecordMonth(t);
+        if (b !== selectedBulan) return false;
+      }
+
+      if (selectedDailyDrilldown !== 'ALL') {
         const dp = parseDateParts(t.troubleOpenTime);
-        if (!dp || dp.dateKey !== selectedDate) return false;
+        if (!dp || dp.dateKey !== selectedDailyDrilldown) return false;
       }
 
       if (searchQuery.trim()) {
@@ -248,7 +281,7 @@ export default function TicketEvaluationDashboard() {
 
       return true;
     });
-  }, [tickets, selectedSektor, selectedSto, selectedTypeLayanan, selectedTypeTiket, selectedHvc, selectedSolutionCategory, selectedDate, searchQuery]);
+  }, [tickets, selectedSektor, selectedSto, selectedTypeLayanan, selectedTypeTiket, selectedHvc, selectedSolutionCategory, selectedBulan, selectedDailyDrilldown, searchQuery]);
 
   // Unique options for filter dropdowns
   const filterOptions = useMemo(() => {
@@ -258,7 +291,7 @@ export default function TicketEvaluationDashboard() {
     const typeTikets = new Set<string>();
     const hvcs = new Set<string>();
     const categories = new Set<string>();
-    const datesMap = new Map<string, { dateKey: string; label: string; count: number }>();
+    const bulansMap = new Map<string, number>();
 
     tickets.forEach(t => {
       if (t.sektor) sektors.add(t.sektor);
@@ -268,16 +301,19 @@ export default function TicketEvaluationDashboard() {
       if (t.flagHvc) hvcs.add(t.flagHvc);
       categories.add(categorizeSolution(t.actualSolution));
 
-      const dp = parseDateParts(t.troubleOpenTime);
-      if (dp) {
-        if (!datesMap.has(dp.dateKey)) {
-          datesMap.set(dp.dateKey, { dateKey: dp.dateKey, label: dp.label, count: 0 });
-        }
-        datesMap.get(dp.dateKey)!.count += 1;
+      const b = getRecordMonth(t);
+      if (b) {
+        bulansMap.set(b, (bulansMap.get(b) || 0) + 1);
       }
     });
 
-    const datesSorted = Array.from(datesMap.values()).sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+    const bulansSorted = Array.from(bulansMap.entries())
+      .map(([month, count]) => ({ month, count }))
+      .sort((a, b) => {
+        const orderA = MONTH_ORDER[a.month.toLowerCase()] || 99;
+        const orderB = MONTH_ORDER[b.month.toLowerCase()] || 99;
+        return orderA !== orderB ? orderA - orderB : a.month.localeCompare(b.month);
+      });
 
     return {
       sektors: Array.from(sektors).sort(),
@@ -286,7 +322,7 @@ export default function TicketEvaluationDashboard() {
       typeTikets: Array.from(typeTikets).sort(),
       hvcs: Array.from(hvcs).sort(),
       categories: Array.from(categories).sort(),
-      dates: datesSorted,
+      bulans: bulansSorted,
     };
   }, [tickets]);
 
@@ -757,7 +793,8 @@ export default function TicketEvaluationDashboard() {
     setSelectedTypeTiket('ALL');
     setSelectedHvc('ALL');
     setSelectedSolutionCategory('ALL');
-    setSelectedDate('ALL');
+    setSelectedBulan('ALL');
+    setSelectedDailyDrilldown('ALL');
     setSearchQuery('');
     setCurrentPage(1);
   };
@@ -818,7 +855,8 @@ export default function TicketEvaluationDashboard() {
     selectedTypeTiket !== 'ALL' ||
     selectedHvc !== 'ALL' ||
     selectedSolutionCategory !== 'ALL' ||
-    selectedDate !== 'ALL' ||
+    selectedBulan !== 'ALL' ||
+    selectedDailyDrilldown !== 'ALL' ||
     searchQuery.trim() !== '';
 
   return (
@@ -937,17 +975,17 @@ export default function TicketEvaluationDashboard() {
             </select>
           </div>
 
-          {/* Tanggal Harian */}
+          {/* Bulan */}
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-slate-500 uppercase">Tanggal Harian</label>
+            <label className="text-[10px] font-bold text-slate-500 uppercase">Bulan</label>
             <select
-              value={selectedDate}
-              onChange={e => { setSelectedDate(e.target.value); setCurrentPage(1); }}
+              value={selectedBulan}
+              onChange={e => { setSelectedBulan(e.target.value); setCurrentPage(1); }}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/30"
             >
-              <option value="ALL">Semua Tanggal ({filterOptions.dates.length} Hari)</option>
-              {filterOptions.dates.map(d => (
-                <option key={d.dateKey} value={d.dateKey}>{d.label} ({d.count} tiket)</option>
+              <option value="ALL">Semua Bulan ({tickets.length} Tiket)</option>
+              {filterOptions.bulans.map(b => (
+                <option key={b.month} value={b.month}>{b.month} ({b.count} tiket)</option>
               ))}
             </select>
           </div>
@@ -1595,7 +1633,7 @@ export default function TicketEvaluationDashboard() {
                       <td className="py-3 px-4 text-center">
                         <button
                           onClick={() => {
-                            setSelectedDate(day.dateKey);
+                            setSelectedDailyDrilldown(day.dateKey);
                             setActiveSubSection('table');
                           }}
                           className="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 text-[10px] font-bold rounded-lg transition-colors cursor-pointer"
