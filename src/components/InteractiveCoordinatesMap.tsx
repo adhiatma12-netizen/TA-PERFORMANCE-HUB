@@ -711,6 +711,189 @@ export default function InteractiveCoordinatesMap({
     return { eastJavaPoints, maduraPoints, trunkLinksPoints, citiesPoints };
   }, [bounds]);
 
+  // Comprehensive AI Spatial Clustering & Market Potential Evaluation Handler
+  const handleTriggerAiEvaluation = () => {
+    if (!onOpenAiEvaluation) return;
+
+    interface ClusterAccumulator {
+      key: string;
+      sto: string;
+      sektor: string;
+      total: number;
+      comp: number;
+      cancl: number;
+      fail: number;
+      indihome: number;
+      indibizz: number;
+      latSum: number;
+      lngSum: number;
+      errors: Record<string, number>;
+    }
+
+    const clusterMap: Record<string, ClusterAccumulator> = {};
+    let totalComp = 0;
+    let totalCancl = 0;
+    let totalFail = 0;
+    let totalIndihome = 0;
+    let totalIndibizz = 0;
+
+    mapOrders.forEach((o) => {
+      const s = (o.raw.sto || 'Unknown').trim();
+      const sk = (o.raw.sektor || 'Unknown').trim();
+      const key = `${s} - ${sk}`;
+      if (!clusterMap[key]) {
+        clusterMap[key] = {
+          key,
+          sto: s,
+          sektor: sk,
+          total: 0,
+          comp: 0,
+          cancl: 0,
+          fail: 0,
+          indihome: 0,
+          indibizz: 0,
+          latSum: 0,
+          lngSum: 0,
+          errors: {},
+        };
+      }
+      const c = clusterMap[key];
+      c.total += 1;
+      c.latSum += o.lat;
+      c.lngSum += o.lng;
+
+      const st = (o.raw.status || '').toUpperCase();
+      if (st.includes('COMP') || st.includes('SELESAI') || st.includes('SUCCESS')) {
+        c.comp += 1;
+        totalComp += 1;
+      } else if (st.includes('CANCL') || st.includes('BATAL') || st.includes('KENDALA')) {
+        c.cancl += 1;
+        totalCancl += 1;
+      } else {
+        c.fail += 1;
+        totalFail += 1;
+      }
+
+      const seg = (o.raw.segment || '').toLowerCase();
+      if (seg.includes('bizz') || seg.includes('business') || seg.includes('b2b') || seg.includes('enterprise')) {
+        c.indibizz += 1;
+        totalIndibizz += 1;
+      } else {
+        c.indihome += 1;
+        totalIndihome += 1;
+      }
+
+      const err = o.raw.errorCode || o.raw.subErrorCode;
+      if (err && err !== '-' && err.trim() !== '') {
+        c.errors[err] = (c.errors[err] || 0) + 1;
+      }
+    });
+
+    // Calculate cluster metrics and market classifications
+    const clusterList = Object.values(clusterMap).map((c) => {
+      const avgLat = c.latSum / (c.total || 1);
+      const avgLng = c.lngSum / (c.total || 1);
+      const compRate = (c.comp / (c.total || 1)) * 100;
+      const canclRate = (c.cancl / (c.total || 1)) * 100;
+
+      let dominantErr = '-';
+      let maxErrCount = 0;
+      for (const [err, cnt] of Object.entries(c.errors)) {
+        if (cnt > maxErrCount) {
+          maxErrCount = cnt;
+          dominantErr = `${err} (${cnt}x)`;
+        }
+      }
+
+      let marketCategory = 'Residensial Reguler';
+      let recommendation = 'Pertahankan SLA instalasi reguler';
+      if (canclRate >= 25 && c.total >= 3) {
+        marketCategory = '⚠️ Unserved Market (High Demand Terhambat)';
+        recommendation = `Prioritas ekspansi ODP baru & pensolusian alpro untuk mengonversi ${c.cancl} demand tertahan`;
+      } else if (compRate >= 70 && c.total >= 6) {
+        marketCategory = '🟢 Core Demand Hub (Densitas Tinggi)';
+        recommendation = `Penetrasi pasar intensif (micro-canvassing) & upselling kecepatan (sukses rate ${compRate.toFixed(0)}%)`;
+      } else if (c.indibizz >= 2) {
+        marketCategory = '💼 Koridor Bisnis Komersial (B2B Indibizz)';
+        recommendation = 'Fokus pemasaran paket korporat Indibizz dengan SLA prioritas';
+      } else {
+        marketCategory = '🟡 Klaster Berkembang / Suburban';
+        recommendation = 'Eksplorasi penambahan homepass baru untuk menjangkau pemukiman baru';
+      }
+
+      return {
+        ...c,
+        avgLat,
+        avgLng,
+        compRate,
+        canclRate,
+        dominantErr,
+        marketCategory,
+        recommendation,
+      };
+    });
+
+    clusterList.sort((a, b) => b.total - a.total);
+
+    const topCluster = clusterList[0];
+    const unmetList = [...clusterList].filter((c) => c.cancl > 0).sort((a, b) => b.cancl - a.cancl);
+    const highestUnmetCluster = unmetList[0];
+
+    const overallCompRate = mapOrders.length > 0 ? (totalComp / mapOrders.length) * 100 : 0;
+    const overallCanclRate = mapOrders.length > 0 ? (totalCancl / mapOrders.length) * 100 : 0;
+
+    // Prepare sample rows combining top cluster classifications and sample coordinate points
+    const clusterRows = clusterList.slice(0, 8).map((c) => ({
+      'Tipe Rekapitulasi': 'ANALISIS KLASTER SPASIAL',
+      'Klaster STO - Sektor': c.key,
+      'Koordinat Tengah (Lat, Lng)': `${c.avgLat.toFixed(5)}, ${c.avgLng.toFixed(5)}`,
+      'Total Titik Koordinat': c.total,
+      'Realisasi Sukses (COMPWORK)': `${c.comp} (${c.compRate.toFixed(0)}%)`,
+      'Kendala / Batal (CANCLWORK)': `${c.cancl} (${c.canclRate.toFixed(0)}%)`,
+      'Kendala Dominan': c.dominantErr,
+      'Profil Potensi Pasar': c.marketCategory,
+      'Rekomendasi Pemasaran': c.recommendation,
+    }));
+
+    const sampleCoordRows = filteredMapOrders.slice(0, 12).map((o) => ({
+      'Tipe Rekapitulasi': 'SAMPEL TITIK ORDER PETA',
+      'Klaster STO - Sektor': `${o.raw.sto || '-'} - ${o.raw.sektor || '-'}`,
+      'Koordinat Tengah (Lat, Lng)': `${o.lat.toFixed(5)}, ${o.lng.toFixed(5)}`,
+      'Total Titik Koordinat': o.raw.scOrder,
+      'Realisasi Sukses (COMPWORK)': o.raw.status,
+      'Kendala / Batal (CANCLWORK)': o.raw.errorCode || '-',
+      'Kendala Dominan': o.raw.packageName || '-',
+      'Profil Potensi Pasar': o.raw.segment || 'Indihome',
+      'Rekomendasi Pemasaran': o.raw.customerName || o.raw.homepassId || '-',
+    }));
+
+    onOpenAiEvaluation(
+      'Peta Sebaran Koordinat Realisasi & Clustering PSB Provisioning',
+      {
+        'Total Titik Koordinat Terpetakan': mapOrders.length,
+        'Titik Realisasi Sukses (COMPWORK)': totalComp,
+        'Titik Kendala / Batal (CANCLWORK)': totalCancl,
+        'Titik Gagal Lapangan (WORKFAIL)': totalFail,
+        'Rasio Realisasi Spasial (Completion)': `${overallCompRate.toFixed(1)}%`,
+        'Tingkat Kendala Spasial': `${overallCanclRate.toFixed(1)}%`,
+        'Pusat Massa Geografis (Centroid)': centroid.lat !== 0 ? `${centroid.lat.toFixed(4)}, ${centroid.lng.toFixed(4)}` : '-',
+        'Klaster Terpadat (Core Hub)': topCluster ? `${topCluster.key} (${topCluster.total} titik, ${topCluster.compRate.toFixed(0)}% sukses)` : '-',
+        'Klaster Unserved Demand (Prioritas ODP)': highestUnmetCluster ? `${highestUnmetCluster.key} (${highestUnmetCluster.cancl} kendala/batal - ${highestUnmetCluster.dominantErr})` : '-',
+        'Proporsi Segmen': `Indihome: ${totalIndihome} (${((totalIndihome / (mapOrders.length || 1)) * 100).toFixed(0)}%) | Indibizz B2B: ${totalIndibizz}`,
+        'Cakupan Koordinat Peta': bounds.finalMinLat !== Infinity ? `Lat [${bounds.finalMinLat.toFixed(3)} s/d ${bounds.finalMaxLat.toFixed(3)}], Lng [${bounds.finalMinLng.toFixed(3)} s/d ${bounds.finalMaxLng.toFixed(3)}]` : '-',
+      },
+      [...clusterRows, ...sampleCoordRows],
+      {
+        Tahun: mapYear,
+        Bulan: mapBulan === 'All' ? 'Semua Bulan' : INDONESIAN_MONTHS[Number(mapBulan) - 1],
+        Status: mapStatus.toUpperCase() === 'ALL' ? 'Semua Status' : mapStatus,
+        'Service Area (SA)': mapSA === 'All' ? 'Semua SA' : mapSA,
+        Segment: mapSegment === 'All' ? 'Semua Segment' : mapSegment,
+      },
+      'Evaluasi visual data di peta: analisis clustering pelanggan berdasar titik-titik koordinat di peta, konsentrasi densitas spasial per STO/Sektor, identifikasi unmet demand pada klaster dengan kendala alpro/ODP jauh, serta berikan rekomendasi market potensial untuk strategi pemasaran dan penataan rute teknisi sesuai sebaran peta.'
+    );
+  };
+
   return (
     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col" id="realisasi-coordinates-map-panel">
       {/* SECTION PANEL HEADER */}
@@ -739,54 +922,7 @@ export default function InteractiveCoordinatesMap({
           {onOpenAiEvaluation && (
             <AIEvaluationButton
               size="sm"
-              onClick={() => {
-                const stoCounts: Record<string, number> = {};
-                const sektorCounts: Record<string, number> = {};
-                mapOrders.forEach((o) => {
-                  const s = o.raw.sto || 'Unknown';
-                  const sk = o.raw.sektor || 'Unknown';
-                  stoCounts[s] = (stoCounts[s] || 0) + 1;
-                  sektorCounts[sk] = (sektorCounts[sk] || 0) + 1;
-                });
-                const topStos = Object.entries(stoCounts)
-                  .sort((a, b) => b[1] - a[1])
-                  .slice(0, 5)
-                  .map(([name, count]) => `${name} (${count})`)
-                  .join(', ');
-                const topSektors = Object.entries(sektorCounts)
-                  .sort((a, b) => b[1] - a[1])
-                  .map(([name, count]) => `${name} (${count})`)
-                  .join(', ');
-
-                onOpenAiEvaluation(
-                  'Peta Sebaran Koordinat Realisasi PSB Provisioning',
-                  {
-                    Tahun: mapYear,
-                    Bulan: mapBulan === 'All' ? 'Semua Bulan' : INDONESIAN_MONTHS[Number(mapBulan) - 1],
-                    Status: mapStatus.toUpperCase() === 'ALL' ? 'Semua Status' : mapStatus,
-                    'Service Area (SA)': mapSA === 'All' ? 'Semua SA' : mapSA,
-                    Segment: mapSegment === 'All' ? 'Semua Segment' : mapSegment,
-                    'Total Titik Valid': mapOrders.length,
-                    'Total Order Periode': totalPeriodOrders,
-                    'Tingkat Kepadatan': `${formatPercent((mapOrders.length / (totalPeriodOrders || 1)) * 100)}%`,
-                    'Titik Pusat Geografis': centroid.lat !== 0 ? `${centroid.lat.toFixed(4)}, ${centroid.lng.toFixed(4)}` : '-',
-                    'Top STO Terkonsentrasi': topStos || '-',
-                    'Sebaran Sektor': topSektors || '-',
-                  },
-                  filteredMapOrders.slice(0, 25).map((o) => ({
-                    'SC Order': o.raw.scOrder,
-                    Sektor: o.raw.sektor,
-                    STO: o.raw.sto,
-                    Status: o.raw.status,
-                    Latitude: o.lat.toFixed(6),
-                    Longitude: o.lng.toFixed(6),
-                    Paket: o.raw.packageName || '-',
-                    'Homepass / Info': o.raw.homepassId || o.raw.errorCode || '-',
-                  })),
-                  { Status: mapStatus, Bulan: mapBulan, SA: mapSA, Tahun: mapYear, Segment: mapSegment },
-                  'Evaluasi sebaran spasial dan geografis titik realisasi dan kendala PSB Provisioning. Analisis klaster kepadatan order antar STO/Sektor, potensi kesenjangan jangkauan ODP/jaringan, serta rekomendasi penataan rute dan penyebaran teknisi lapangan.'
-                );
-              }}
+              onClick={handleTriggerAiEvaluation}
             />
           )}
           <div className="bg-slate-100/80 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-600 flex items-center space-x-1.5">

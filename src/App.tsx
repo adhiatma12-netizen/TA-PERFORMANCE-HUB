@@ -11,6 +11,7 @@ import TechnicianDashboard from './components/TechnicianDashboard';
 import KelolaDataDashboard from './components/KelolaDataDashboard';
 import LoginPage from './components/LoginPage';
 import WelcomePage from './components/WelcomePage';
+import ExecutivePdfReportModal from './components/ExecutivePdfReportModal';
 import { rawProvisioningData, ProvisioningRow } from './data/provisioningStats';
 import { fallbackIndibizzData } from './data/indibizzFallbackData';
 import { parseCSV } from './lib/googleSheets';
@@ -52,6 +53,7 @@ import {
   Layers,
   Award,
   FileSpreadsheet,
+  FileDown,
 } from 'lucide-react';
 
 // Helper to scale/adjust performance dashboard data based on active month
@@ -260,6 +262,7 @@ export default function App() {
   const [technicianSubTab, setTechnicianSubTab] = useState<'leaderboard' | 'progress'>('leaderboard');
   const [businessSubTab, setBusinessSubTab] = useState<'kpi' | 'trend' | 'portfolio'>('kpi');
   const [kelolaDataSubTab, setKelolaDataSubTab] = useState<'sheets' | 'indicators' | 'users'>('sheets');
+  const [showPdfModal, setShowPdfModal] = useState<boolean>(false);
 
   // Accordion state for sidebar sub-menus: default ALL collapsed/hidden
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
@@ -1295,7 +1298,16 @@ export default function App() {
             </h2>
           </div>
           
-          <div className="mt-4 md:mt-0 flex items-center space-x-2 text-xs font-bold text-slate-500">
+          <div className="mt-4 md:mt-0 flex flex-wrap items-center gap-2 text-xs font-bold text-slate-500">
+            <button
+              onClick={() => setShowPdfModal(true)}
+              className="inline-flex items-center space-x-1.5 px-3 py-1 text-xs font-bold rounded-md transition-all border shadow-xs cursor-pointer bg-red-600 hover:bg-red-700 text-white border-red-600 active:scale-95"
+              title="Download PDF Resume Performansi Operasional (Evaluasi Teknis, Non-Teknis, RCA & Rekomendasi)"
+              id="btn-download-pdf-resume-global"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Download PDF Resume Performansi</span>
+            </button>
             <button
               onClick={fetchLiveData}
               disabled={isLoadingLive}
@@ -1414,6 +1426,16 @@ export default function App() {
         </div>
       </footer>
 
+      {/* Executive PDF Report Modal */}
+      <ExecutivePdfReportModal
+        isOpen={showPdfModal}
+        onClose={() => setShowPdfModal(false)}
+        activeRegional={activeRegional}
+        totalTickets={currentData?.assurance?.totalTickets || 2649}
+        avgTtr={currentData?.assurance?.mttrHours || 17.15}
+        uptime="99.99%"
+        stoStatus="OK (100%)"
+      />
     </div>
   );
 }

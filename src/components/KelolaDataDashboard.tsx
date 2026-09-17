@@ -40,6 +40,7 @@ import {
   KeyColumnDetail 
 } from '../data/spreadsheetColumnDetails';
 import { ColumnLogicModal } from './ColumnLogicModal';
+import AIEvaluationModal, { AIEvaluationButton } from './AIEvaluationModal';
 
 interface KelolaDataDashboardProps {
   currentUser: string | null;
@@ -90,6 +91,36 @@ export default function KelolaDataDashboard({
   const [selectedModule, setSelectedModule] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // AI Performance Evaluation Modal State
+  const [aiModalState, setAiModalState] = useState<{
+    isOpen: boolean;
+    tableName: string;
+    summaryMetrics: Record<string, any>;
+    sampleRows: any[];
+    promptNote?: string;
+  }>({
+    isOpen: false,
+    tableName: '',
+    summaryMetrics: {},
+    sampleRows: [],
+    promptNote: '',
+  });
+
+  const openAiModal = (
+    tableName: string,
+    summaryMetrics: Record<string, any>,
+    sampleRows: any[],
+    promptNote?: string
+  ) => {
+    setAiModalState({
+      isOpen: true,
+      tableName,
+      summaryMetrics,
+      sampleRows,
+      promptNote,
+    });
+  };
 
   // Column logic inspection modal state
   const [selectedSourceForLogic, setSelectedSourceForLogic] = useState<SpreadsheetSourceItem | null>(null);
@@ -674,6 +705,31 @@ export default function KelolaDataDashboard({
 
           {/* Quick Actions in Header */}
           <div className="flex flex-wrap lg:flex-col gap-2 shrink-0">
+            <AIEvaluationButton
+              onClick={() =>
+                openAiModal(
+                  'Tata Kelola Data & Integritas Spreadsheet',
+                  {
+                    'Total Sumber Spreadsheet': SPREADSHEET_SOURCES.length,
+                    'Total Indikator Terdaftar': indicators.length,
+                    'Total Akun Pengguna': userList.length,
+                    'Status Otorisasi': 'PREVILAGE OWNER VERIFIED',
+                    'Status Koneksi': 'Live Google Sheets Online',
+                  },
+                  indicators.slice(0, 25).map((ind) => ({
+                    'Kode Indikator': ind.code,
+                    'Nama Indikator': ind.name,
+                    'Modul': ind.moduleName,
+                    'Sumber Sheet': ind.sourceSheet,
+                    'Rumus': ind.formula,
+                    'Benchmark Target': ind.benchmark,
+                  })),
+                  'Evaluasi kesehatan tata kelola data, integrasi Google Spreadsheet dengan dashboard Telkom Akses, konsistensi rumus matematis indikator, dan pemetaan hak akses role-based access control.'
+                )
+              }
+              className="w-full justify-center"
+            />
+
             <button
               onClick={onRefreshAllData}
               disabled={isLoadingLive}
@@ -1222,6 +1278,24 @@ export default function KelolaDataDashboard({
           setSelectedSourceForLogic(src);
           setSelectedColumnForLogic(col);
         }}
+      />
+
+      {/* 6. AI PERFORMANCE EVALUATION MODAL */}
+      <AIEvaluationModal
+        isOpen={aiModalState.isOpen}
+        onClose={() => setAiModalState((prev) => ({ ...prev, isOpen: false }))}
+        tableName={aiModalState.tableName}
+        dashboardContext="Tata Kelola Data, Sumber Spreadsheet & Kamus Indikator Telkom Akses"
+        filterContext={{
+          'Role Pengguna': currentUserRole,
+          'Email Aktif': currentUser,
+          'Status Sinkronisasi': syncStatus,
+          'Waktu Sync': syncTime,
+          'Modul Terpilih': selectedModule,
+        }}
+        summaryMetrics={aiModalState.summaryMetrics}
+        sampleRows={aiModalState.sampleRows}
+        promptNote={aiModalState.promptNote}
       />
 
     </div>
