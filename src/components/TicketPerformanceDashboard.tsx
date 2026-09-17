@@ -307,6 +307,168 @@ export default function TicketPerformanceDashboard() {
         </div>
       )}
 
+      {/* 1. FILTER BAR FOR BOTH TABLES */}
+      <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm space-y-3">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+          <div className="flex items-center space-x-2">
+            <Filter className="w-4 h-4 text-slate-500" />
+            <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">
+              Filter Data Operasional
+            </h3>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            {/* Quick reset button */}
+            {(selectedBulan !== 'ALL' || selectedSektor !== 'ALL' || selectedType !== 'ALL' || selectedSto !== 'ALL' || selectedHvc !== 'ALL' || searchQuery) && (
+              <button
+                onClick={() => {
+                  setSelectedBulan('ALL');
+                  setSelectedSektor('ALL');
+                  setSelectedType('ALL');
+                  setSelectedSto('ALL');
+                  setSelectedHvc('ALL');
+                  setSearchQuery('');
+                }}
+                className="text-xs font-bold text-red-500 hover:text-red-700 underline cursor-pointer"
+              >
+                Reset Semua Filter
+              </button>
+            )}
+
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex items-center space-x-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+              title="Perbarui Data dari Google Sheets"
+              id="btn-refresh-ticket-data"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-red-500' : 'text-slate-500'}`} />
+              <span>{loading ? 'Sinkron...' : 'Sinkron Data'}</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 pt-1">
+          {/* Bulan Rekap */}
+          <div>
+            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
+              Bulan
+            </label>
+            <select
+              value={selectedBulan}
+              onChange={e => setSelectedBulan(e.target.value)}
+              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
+              id="filter-bulan"
+            >
+              <option value="ALL">Semua Bulan ({data.records.length})</option>
+              {uniqueBulan.map(b => (
+                <option key={b} value={b}>
+                  {b} ({data.records.filter(r => r.bulanRekap === b).length})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sektor Filter */}
+          <div>
+            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
+              Sektor
+            </label>
+            <select
+              value={selectedSektor}
+              onChange={e => setSelectedSektor(e.target.value)}
+              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
+              id="filter-sektor"
+            >
+              <option value="ALL">Semua Sektor ({data.records.length})</option>
+              {uniqueSektors.map(s => (
+                <option key={s} value={s}>
+                  {s} ({data.records.filter(r => r.sektor === s).length})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Type Tiket Filter */}
+          <div>
+            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
+              Type Tiket
+            </label>
+            <select
+              value={selectedType}
+              onChange={e => setSelectedType(e.target.value)}
+              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
+              id="filter-type"
+            >
+              <option value="ALL">Semua Type Tiket</option>
+              {uniqueTypes.map(t => (
+                <option key={t} value={t}>
+                  {t} ({data.records.filter(r => r.typeTiket === t).length})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* STO Filter */}
+          <div>
+            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
+              STO
+            </label>
+            <select
+              value={selectedSto}
+              onChange={e => setSelectedSto(e.target.value)}
+              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
+              id="filter-sto"
+            >
+              <option value="ALL">Semua STO</option>
+              {uniqueStos.map(s => (
+                <option key={s} value={s}>
+                  {s} ({data.records.filter(r => r.sto === s).length})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* FLAG HVC Filter */}
+          <div>
+            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
+              Flag HVC
+            </label>
+            <select
+              value={selectedHvc}
+              onChange={e => setSelectedHvc(e.target.value)}
+              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
+              id="filter-hvc"
+            >
+              <option value="ALL">Semua Level HVC</option>
+              {uniqueHvcs.map(h => (
+                <option key={h} value={h}>
+                  {h} ({data.records.filter(r => r.flagHvc === h).length})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Search box */}
+          <div>
+            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
+              Pencarian Tiket / ODP
+            </label>
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Cari Tiket, No Inet, ODP..."
+                className="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900"
+                id="search-ticket-input"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* 2. EXECUTIVE KPI CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4" id="kpi-cards-grid">
         {/* Card 1: Total Tiket */}
@@ -578,168 +740,6 @@ export default function TicketPerformanceDashboard() {
                 <Legend wrapperStyle={{ fontSize: '11px' }} />
               </PieChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. FILTER BAR FOR BOTH TABLES */}
-      <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm space-y-3">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-          <div className="flex items-center space-x-2">
-            <Filter className="w-4 h-4 text-slate-500" />
-            <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-              Filter Data Operasional
-            </h3>
-          </div>
-
-          <div className="flex items-center space-x-3">
-            {/* Quick reset button */}
-            {(selectedBulan !== 'ALL' || selectedSektor !== 'ALL' || selectedType !== 'ALL' || selectedSto !== 'ALL' || selectedHvc !== 'ALL' || searchQuery) && (
-              <button
-                onClick={() => {
-                  setSelectedBulan('ALL');
-                  setSelectedSektor('ALL');
-                  setSelectedType('ALL');
-                  setSelectedSto('ALL');
-                  setSelectedHvc('ALL');
-                  setSearchQuery('');
-                }}
-                className="text-xs font-bold text-red-500 hover:text-red-700 underline cursor-pointer"
-              >
-                Reset Semua Filter
-              </button>
-            )}
-
-            <button
-              onClick={handleRefresh}
-              disabled={loading}
-              className="flex items-center space-x-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer disabled:opacity-50"
-              title="Perbarui Data dari Google Sheets"
-              id="btn-refresh-ticket-data"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-red-500' : 'text-slate-500'}`} />
-              <span>{loading ? 'Sinkron...' : 'Sinkron Data'}</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 pt-1">
-          {/* Bulan Rekap */}
-          <div>
-            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
-              Bulan
-            </label>
-            <select
-              value={selectedBulan}
-              onChange={e => setSelectedBulan(e.target.value)}
-              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
-              id="filter-bulan"
-            >
-              <option value="ALL">Semua Bulan ({data.records.length})</option>
-              {uniqueBulan.map(b => (
-                <option key={b} value={b}>
-                  {b} ({data.records.filter(r => r.bulanRekap === b).length})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Sektor Filter */}
-          <div>
-            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
-              Sektor
-            </label>
-            <select
-              value={selectedSektor}
-              onChange={e => setSelectedSektor(e.target.value)}
-              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
-              id="filter-sektor"
-            >
-              <option value="ALL">Semua Sektor ({data.records.length})</option>
-              {uniqueSektors.map(s => (
-                <option key={s} value={s}>
-                  {s} ({data.records.filter(r => r.sektor === s).length})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Type Tiket Filter */}
-          <div>
-            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
-              Type Tiket
-            </label>
-            <select
-              value={selectedType}
-              onChange={e => setSelectedType(e.target.value)}
-              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
-              id="filter-type"
-            >
-              <option value="ALL">Semua Type Tiket</option>
-              {uniqueTypes.map(t => (
-                <option key={t} value={t}>
-                  {t} ({data.records.filter(r => r.typeTiket === t).length})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* STO Filter */}
-          <div>
-            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
-              STO
-            </label>
-            <select
-              value={selectedSto}
-              onChange={e => setSelectedSto(e.target.value)}
-              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
-              id="filter-sto"
-            >
-              <option value="ALL">Semua STO</option>
-              {uniqueStos.map(s => (
-                <option key={s} value={s}>
-                  {s} ({data.records.filter(r => r.sto === s).length})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* FLAG HVC Filter */}
-          <div>
-            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
-              Flag HVC
-            </label>
-            <select
-              value={selectedHvc}
-              onChange={e => setSelectedHvc(e.target.value)}
-              className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer"
-              id="filter-hvc"
-            >
-              <option value="ALL">Semua Level HVC</option>
-              {uniqueHvcs.map(h => (
-                <option key={h} value={h}>
-                  {h} ({data.records.filter(r => r.flagHvc === h).length})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Search box */}
-          <div>
-            <label className="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">
-              Pencarian Tiket / ODP
-            </label>
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Cari Tiket, No Inet, ODP..."
-                className="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900"
-                id="search-ticket-input"
-              />
-            </div>
           </div>
         </div>
       </div>
