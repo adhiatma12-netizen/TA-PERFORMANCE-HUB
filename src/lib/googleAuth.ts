@@ -6,11 +6,18 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 const provider = new GoogleAuthProvider();
-// Request Google Sheets read-only scope
+// Request Google Sheets and Google Drive read-only scopes
 provider.addScope('https://www.googleapis.com/auth/spreadsheets.readonly');
+provider.addScope('https://www.googleapis.com/auth/drive.readonly');
 
 let isSigningIn = false;
-let cachedAccessToken: string | null = null;
+let cachedAccessToken: string | null = (() => {
+  try {
+    return sessionStorage.getItem('telkom_gdrive_access_token');
+  } catch {
+    return null;
+  }
+})();
 
 // Initialize auth state listener. Call this on app load.
 export const initAuth = (
@@ -43,6 +50,9 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     }
 
     cachedAccessToken = credential.accessToken;
+    try {
+      sessionStorage.setItem('telkom_gdrive_access_token', credential.accessToken);
+    } catch {}
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
     console.error('Sign in error:', error);
@@ -52,11 +62,30 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
   }
 };
 
+export const setCachedAccessToken = (token: string | null) => {
+  cachedAccessToken = token;
+  try {
+    if (token) {
+      sessionStorage.setItem('telkom_gdrive_access_token', token);
+    } else {
+      sessionStorage.removeItem('telkom_gdrive_access_token');
+    }
+  } catch {}
+};
+
 export const getAccessToken = async (): Promise<string | null> => {
+  if (!cachedAccessToken) {
+    try {
+      cachedAccessToken = sessionStorage.getItem('telkom_gdrive_access_token');
+    } catch {}
+  }
   return cachedAccessToken;
 };
 
 export const logout = async () => {
   await auth.signOut();
   cachedAccessToken = null;
+  try {
+    sessionStorage.removeItem('telkom_gdrive_access_token');
+  } catch {}
 };

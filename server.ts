@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import { processPerformanceEvaluation } from './src/server/evaluateService';
+import { parseKpiImageWithGemini } from './src/server/kpiImageService';
 
 dotenv.config();
 
@@ -33,6 +34,20 @@ app.post('/api/evaluate-performance', async (req, res) => {
     return res.status(500).json({
       success: false,
       error: err?.message || 'Gagal memproses evaluasi performansi',
+    });
+  }
+});
+
+// API Parse KPI Imbal Jasa Image from Google Drive / Local
+app.post('/api/parse-kpi-image', async (req, res) => {
+  try {
+    const result = await parseKpiImageWithGemini(req.body);
+    return res.json(result);
+  } catch (err: any) {
+    console.error('[Server] KPI image OCR error:', err);
+    return res.status(500).json({
+      success: false,
+      error: err?.message || 'Gagal memproses gambar KPI Imbal Jasa',
     });
   }
 });

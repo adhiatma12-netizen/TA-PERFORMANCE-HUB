@@ -4,7 +4,7 @@ import { RegionalPerformanceData, Regional, Technician, PerformanceDashboardData
 
 // Import dashboards & components
 import BusinessDashboard from './components/BusinessDashboard';
-import AssuranceDashboard from './components/AssuranceDashboard';
+import AssuranceDashboard, { AssuranceSubTab } from './components/AssuranceDashboard';
 import ProvisioningDashboard, { generate2026Q1Data, mapRowsToProvisioning, mapIndibizzRowsToProvisioning } from './components/ProvisioningDashboard';
 import QEDashboard from './components/QEDashboard';
 import TechnicianDashboard from './components/TechnicianDashboard';
@@ -257,7 +257,7 @@ export default function App() {
     return [...rawProvisioningData, ...q12026, ...fallbackIndibizzData];
   });
   const [provisioningSubTab, setProvisioningSubTab] = useState<'sektor' | 'tabel' | 'peta'>('sektor');
-  const [assuranceSubTab, setAssuranceSubTab] = useState<'ticket_perf' | 'operations' | 'ticket_logs'>('ticket_perf');
+  const [assuranceSubTab, setAssuranceSubTab] = useState<AssuranceSubTab>('ticket_perf');
   const [qeSubTab, setQeSubTab] = useState<'main' | 'detail'>('main');
   const [technicianSubTab, setTechnicianSubTab] = useState<'leaderboard' | 'progress'>('leaderboard');
   const [businessSubTab, setBusinessSubTab] = useState<'kpi' | 'trend' | 'portfolio'>('kpi');
@@ -900,6 +900,21 @@ export default function App() {
                       <FileSpreadsheet className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'assurance' && assuranceSubTab === 'ticket_logs' ? 'text-red-600' : 'text-slate-400'}`} />
                       <span className="truncate text-[11px]">Detail Transaksi & Log Tiket</span>
                     </button>
+                    <button
+                      onClick={() => {
+                        handleNavigateTab('assurance');
+                        setAssuranceSubTab('kpi_imbal_jasa');
+                      }}
+                      className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
+                        activeTab === 'assurance' && assuranceSubTab === 'kpi_imbal_jasa'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
+                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                      }`}
+                      id="sidebar-subtab-kpi-imbal-jasa"
+                    >
+                      <Award className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'assurance' && assuranceSubTab === 'kpi_imbal_jasa' ? 'text-red-600' : 'text-slate-400'}`} />
+                      <span className="truncate text-[11px]">KPI ASSURANCE</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -1290,7 +1305,11 @@ export default function App() {
                     ? '🛠️ Performansi Assurance - Ringkasan & Agregasi Tiket'
                     : assuranceSubTab === 'operations'
                     ? '🛠️ Performansi Assurance - Evaluasi Solusi Tiket'
-                    : '📋 Performansi Assurance - Detail Transaksi & Log Tiket (2.649 Tiket)'
+                    : assuranceSubTab === 'ticket_logs'
+                    ? '📋 Performansi Assurance - Detail Transaksi & Log Tiket (2.649 Tiket)'
+                    : assuranceSubTab === 'kpi_ioan'
+                    ? '🏆 Performansi Assurance - KPI IOAN'
+                    : '🏆 Performansi Assurance - KPI ASSURANCE'
                 )}
                 {activeTab === 'provisioning' && '📦 Performansi Pemasangan Baru IndiHome (Provisioning)'}
                 {activeTab === 'qe' && '🛡️ Evaluasi QE Service Area'}

@@ -1,10 +1,11 @@
 {
-  "projectId": "astute-post-n4dh4",
-  "appId": "1:912640284952:web:71f35dfa87658b45d5266d",
-  "apiKey": "AIzaSyDAR4JqlmIc6sh8z6OZJWTXlEPUSSy-gIg",
-  "authDomain": "astute-post-n4dh4.firebaseapp.com",
-  "storageBucket": "astute-post-n4dh4.firebasestorage.app",
-  "messagingSenderId": "912640284952",
+  "projectId": "gen-lang-client-0044136170",
+  "appId": "1:713305470608:web:815cf31324e27584198a15",
+  "apiKey": "AIzaSyDHGAduQ-Roez1eg_MSg3HbfHSBRpSwa08",
+  "authDomain": "gen-lang-client-0044136170.firebaseapp.com",
+  "storageBucket": "gen-lang-client-0044136170.firebasestorage.app",
+  "messagingSenderId": "713305470608",
   "measurementId": "",
-  "oAuthClientId": "912640284952-aunn594dvnr92091hnqa3gn69c257upe.apps.googleusercontent.com"
+  "oAuthClientId": "713305470608-kco5cvk601ud6i71ne1n1kogg7afeuli.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
 }
