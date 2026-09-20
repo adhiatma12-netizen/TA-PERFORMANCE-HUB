@@ -209,7 +209,14 @@ export default function BusinessDashboard({
     return list;
   }, [filteredPortfolios]);
 
-  // Compute monthly trend data for total revenue, cogs, and profit across months (Kolom A)
+  // Sync selectedBulan with activeMonth prop if it matches one of the available months
+  useEffect(() => {
+    if (activeMonth && ['April', 'Mei', 'Juni'].includes(activeMonth)) {
+      setSelectedBulan(activeMonth);
+    }
+  }, [activeMonth]);
+
+  // Compute monthly trend data for total revenue, cogs, and profit across months
   const monthlyTrendData = useMemo(() => {
     const MONTH_ORDER = [
       'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -224,11 +231,8 @@ export default function BusinessDashboard({
       if (!monthMap[bln]) {
         monthMap[bln] = { bulan: bln, Revenue: 0, COGS: 0, Profit: 0 };
       }
-      if (r.groupAkun === 'REVENUE') {
-        monthMap[bln].Revenue += r.amount;
-      } else if (r.groupAkun === 'COGS') {
-        monthMap[bln].COGS += r.amount;
-      }
+      monthMap[bln].Revenue += r.revenue;
+      monthMap[bln].COGS += r.cogs;
     });
 
     Object.values(monthMap).forEach((m) => {
@@ -319,16 +323,16 @@ export default function BusinessDashboard({
   };
 
   const handleExportCSV = () => {
-    let csv = 'Portofolio,Nama Program,Group Akun REVENUE,Group Akun COGS,Laba Kotor,Gross Margin (%)\n';
+    let csv = 'Periode Bulan,Portofolio,Nama Program,REVENUE (Rp),COGS (Rp),Laba Kotor (Rp),Gross Margin (%)\n';
     masterProgramList.forEach((r) => {
-      csv += `"${r.portofolio}","${r.namaProgram}",${r.revenue},${r.cogs},${r.grossProfit},${r.marginPercent.toFixed(2)}\n`;
+      csv += `"${selectedBulan}","${r.portofolio}","${r.namaProgram}",${r.revenue},${r.cogs},${r.grossProfit},${r.marginPercent.toFixed(2)}%\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `Performansi_Bisnis_BC_${selectedBulan}.csv`);
+    link.setAttribute('download', `Performansi_Bisnis_BC2026_${selectedBulan.replace(/\s+/g, '_')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -340,7 +344,7 @@ export default function BusinessDashboard({
   return (
     <div className="space-y-6 font-sans text-slate-800" id="business-dashboard-bc">
       
-      {/* FILTER MENU CONTROL BAR (REFERENSI KOLOM A - BULAN & PORTOFOLIO) */}
+      {/* FILTER & PENCARIAN MENU */}
       <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm" id="filter-bar">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           
@@ -349,19 +353,24 @@ export default function BusinessDashboard({
             <div className="w-full sm:w-60">
               <label htmlFor="select-periode-evaluasi-bulan" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5 mb-1.5">
                 <Calendar className="w-3.5 h-3.5 text-red-500" />
-                <span>Periode Evaluasi Bulan</span>
+                <span>Filter Periode Bulan</span>
               </label>
               <div className="relative">
                 <select
                   id="select-periode-evaluasi-bulan"
                   value={selectedBulan}
-                  onChange={(e) => setSelectedBulan(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedBulan(e.target.value);
+                    if (e.target.value !== 'Semua Bulan') {
+                      setActiveMonth?.(e.target.value);
+                    }
+                  }}
                   className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl px-3.5 py-2.5 appearance-none focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 cursor-pointer pr-9 shadow-sm hover:bg-slate-100/80 transition-colors"
                 >
-                  <option value="Semua Bulan">Semua Bulan</option>
+                  <option value="Semua Bulan">Semua Bulan (Q2 2026)</option>
                   {stats.availableMonths.map((m) => (
                     <option key={m} value={m}>
-                      {m}
+                      {m} 2026
                     </option>
                   ))}
                 </select>
@@ -410,45 +419,44 @@ export default function BusinessDashboard({
                 </button>
               </div>
             )}
-
-            <div className="self-end pb-0.5">
-              <button
-                onClick={loadData}
-                disabled={isLoading}
-                className="px-3 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
-                title="Segarkan data dari Google Sheet"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-red-500' : 'text-slate-500'}`} />
-                <span>{isLoading ? 'Memuat...' : 'Segarkan Data'}</span>
-              </button>
-            </div>
           </div>
 
-          {/* Program Name Search */}
-          <div className="w-full sm:w-64">
-            <label htmlFor="search-bc-program" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-              Cari Nama Program
-            </label>
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
-              <input
-                id="search-bc-program"
-                type="text"
-                placeholder="Cari OSP, Provisioning, IOAN..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 shadow-sm"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 text-xs font-bold cursor-pointer"
-                  title="Hapus kata kunci"
-                >
-                  ✕
-                </button>
-              )}
+          {/* Action buttons & Program Name Search */}
+          <div className="flex items-end gap-2.5 flex-wrap">
+            <div className="w-full sm:w-60">
+              <label htmlFor="search-bc-program" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                Cari Nama Program
+              </label>
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                <input
+                  id="search-bc-program"
+                  type="text"
+                  placeholder="Cari OSP, Provisioning, IOAN..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl pl-9 pr-8 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 shadow-sm"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 text-xs font-bold cursor-pointer"
+                    title="Hapus kata kunci"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             </div>
+
+            <button
+              onClick={handleExportCSV}
+              className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer border border-slate-200 shadow-xs shrink-0"
+              title="Ekspor CSV Rincian Portofolio & Program"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span>Ekspor CSV</span>
+            </button>
           </div>
         </div>
       </div>
@@ -1177,7 +1185,7 @@ export default function BusinessDashboard({
           <div>
             <h3 className="text-base font-black text-slate-900 flex items-center space-x-2">
               <Calendar className="w-5 h-5 text-red-600" />
-              <span>Matriks Realisasi Finansial Bulanan (Januari s.d. Desember)</span>
+              <span>Matriks Realisasi Finansial Bulanan (Budget Comite 2026: April, Mei, Juni)</span>
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
               Tabel komparasi pertumbuhan Revenue, realisasi Beban COGS, dan Laba Kotor per bulan.
@@ -1387,18 +1395,18 @@ export default function BusinessDashboard({
                         openAiEvaluation(
                           `Tabel Indikator Portofolio ${p.portofolio}`,
                           {
-                            'Total Revenue': `Rp ${p.revenue.toLocaleString('id-ID')} Jt`,
-                            'Total COGS': `Rp ${p.cogs.toLocaleString('id-ID')} Jt`,
-                            'Gross Profit': `Rp ${p.grossProfit.toLocaleString('id-ID')} Jt`,
+                            'Total Revenue': formatIDRFull(p.revenue),
+                            'Total COGS': formatIDRFull(p.cogs),
+                            'Gross Profit': formatIDRFull(p.grossProfit),
                             'Gross Margin': `${p.marginPercent.toFixed(1)}%`,
                             'COGS Ratio': `${p.cogsRatioPercent.toFixed(1)}%`,
                             'Jumlah Program': p.programs.length,
                           },
                           p.programs.map((prg) => ({
                             'Nama Program': prg.namaProgram,
-                            Revenue: prg.revenue,
-                            COGS: prg.cogs,
-                            Profit: prg.grossProfit,
+                            Revenue: formatIDRFull(prg.revenue),
+                            COGS: formatIDRFull(prg.cogs),
+                            Profit: formatIDRFull(prg.grossProfit),
                             Margin: `${prg.marginPercent.toFixed(1)}%`,
                           })),
                           { Portofolio: p.portofolio },
@@ -1412,8 +1420,8 @@ export default function BusinessDashboard({
                       <thead>
                         <tr className="bg-slate-50 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100">
                           <th className="py-3 px-4">Nama Program</th>
-                          <th className="py-3 px-4 text-right">Revenue (Group Akun REVENUE)</th>
-                          <th className="py-3 px-4 text-right">COGS (Group Akun COGS)</th>
+                          <th className="py-3 px-4 text-right">REVENUE (Sheet BC 2026)</th>
+                          <th className="py-3 px-4 text-right">COGS (Sheet BC 2026)</th>
                           <th className="py-3 px-4 text-right">Laba Kotor (Profit)</th>
                           <th className="py-3 px-4 text-center">Gross Margin (%)</th>
                           <th className="py-3 px-4 text-center">Status</th>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { listRegionals, mockPerformanceData, getAllRegionalData } from './data/mockData';
 import { RegionalPerformanceData, Regional, Technician, PerformanceDashboardData } from './types';
 
@@ -242,6 +242,36 @@ export default function App() {
     const saved = localStorage.getItem('telkom_akses_sidebar_open');
     return saved !== null ? saved === 'true' : true;
   });
+
+  // Fitur Auto Hide Sidebar: setiap 3 detik maka side bar akan hide
+  const autoHideTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const resetAutoHideTimer = useCallback(() => {
+    if (autoHideTimerRef.current) {
+      clearTimeout(autoHideTimerRef.current);
+    }
+    if (isSidebarOpen) {
+      autoHideTimerRef.current = setTimeout(() => {
+        setIsSidebarOpen(false);
+      }, 3000);
+    }
+  }, [isSidebarOpen]);
+
+  useEffect(() => {
+    if (isSidebarOpen) {
+      resetAutoHideTimer();
+    } else {
+      if (autoHideTimerRef.current) {
+        clearTimeout(autoHideTimerRef.current);
+      }
+    }
+
+    return () => {
+      if (autoHideTimerRef.current) {
+        clearTimeout(autoHideTimerRef.current);
+      }
+    };
+  }, [isSidebarOpen, resetAutoHideTimer]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(prev => {
@@ -602,6 +632,10 @@ export default function App() {
             isSidebarOpen ? 'w-72' : 'w-[70px]'
           } bg-white border-r border-slate-200/90 shadow-xs shrink-0 flex flex-col sticky top-[69px] h-[calc(100vh-69px)] z-30 transition-all duration-300 ease-in-out`}
           id="sidebar-navigation"
+          onMouseEnter={resetAutoHideTimer}
+          onMouseMove={resetAutoHideTimer}
+          onMouseLeave={resetAutoHideTimer}
+          onClick={resetAutoHideTimer}
         >
           {/* Sidebar Top Header with Arrow Button to HIDE or UNHIDE (Cukup Tanda Panah Saja) */}
           <div className={`p-3 border-b border-slate-100 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'} bg-slate-50/90 sticky top-0 z-10 backdrop-blur-xs min-h-[57px]`}>
@@ -640,7 +674,7 @@ export default function App() {
                     ? 'bg-red-600 text-white shadow-md shadow-red-600/25 ring-2 ring-red-600/30'
                     : 'bg-white text-slate-600 hover:bg-red-50 hover:text-red-600 border border-slate-200/80 shadow-2xs'
                 }`}
-                title="Performansi Bisnis (Indibizz & B2B)"
+                title="Performansi Bisnis"
                 id="sidebar-collapsed-icon-business"
               >
                 <BarChart3 className="w-5 h-5" />
@@ -742,7 +776,7 @@ export default function App() {
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-bold truncate">Performansi Bisnis</div>
                       <div className={`text-[10px] truncate ${activeTab === 'business' ? 'text-red-100' : 'text-slate-400'}`}>
-                        Indibizz & B2B Profitabilitas
+                        Budget Commite Branch
                       </div>
                     </div>
                   </button>

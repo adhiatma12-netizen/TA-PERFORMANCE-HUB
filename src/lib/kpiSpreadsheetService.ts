@@ -1,7 +1,7 @@
-import { MonthKpiDataset } from '../types/kpiImbalJasa';
+import { MonthKpiDataset, KpiMonth } from '../types/kpiImbalJasa';
 import { KPI_DATASETS, SPREADSHEET_CONFIG } from '../data/kpiSpreadsheetDatabase';
 
-export type KpiMonth = 'SEPTEMBER' | 'AGUSTUS' | 'JULI';
+export type { KpiMonth };
 
 export interface SpreadsheetKpiFetchResult {
   success: boolean;
@@ -18,6 +18,8 @@ export interface SpreadsheetKpiFetchResult {
  *   - SEPTEMBER: B3:O24
  *   - AGUSTUS: B26:O47
  *   - JULI: B49:O70
+ *   - JUNI: B72:O93
+ *   - MEI: B95:O116
  */
 export async function fetchKpiSpreadsheetData(month: KpiMonth): Promise<SpreadsheetKpiFetchResult> {
   const normalizedMonth = (month.toUpperCase() as KpiMonth);

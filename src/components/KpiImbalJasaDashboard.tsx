@@ -310,6 +310,7 @@ export default function KpiImbalJasaDashboard() {
                 </label>
                 <select
                   id="select-bulan"
+                  aria-label="Filter Bulan KPI Imbal Jasa"
                   value={selectedBulan}
                   onChange={(e) => setSelectedBulan(e.target.value as KpiMonth)}
                   className="bg-transparent text-sm font-extrabold text-slate-900 focus:outline-hidden cursor-pointer"

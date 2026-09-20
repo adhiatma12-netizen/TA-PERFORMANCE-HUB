@@ -52,11 +52,13 @@ export interface KpiIndicatorSummaryRow {
 
 export type KpiIndicatorRow = KpiIndicatorSummaryRow;
 
+export type KpiMonth = 'SEPTEMBER' | 'AGUSTUS' | 'JULI' | 'JUNI' | 'MEI';
+
 export interface KpiSpreadsheetSourceInfo {
   spreadsheetId: string;
   sheetName: string;
   gid: string;
-  month: 'SEPTEMBER' | 'AGUSTUS' | 'JULI';
+  month: KpiMonth;
   range: string;
   imageUrl: string;
   sheetDirectUrl: string;
@@ -64,7 +66,7 @@ export interface KpiSpreadsheetSourceInfo {
 }
 
 export interface MonthKpiDataset {
-  month: 'SEPTEMBER' | 'AGUSTUS' | 'JULI';
+  month: KpiMonth;
   monthLabel: string;
   range: string;
   title: string;

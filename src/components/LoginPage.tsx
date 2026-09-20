@@ -6,7 +6,6 @@ import {
   Eye, 
   EyeOff, 
   LogIn, 
-  ShieldCheck, 
   AlertCircle, 
   RefreshCw,
   CheckCircle2,
@@ -298,14 +297,6 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               )}
             </button>
           </form>
-
-          {/* Footer note inside card */}
-          <div className="mt-6 pt-6 border-t border-slate-100 text-center text-[11px] text-slate-500">
-            <p className="flex items-center justify-center space-x-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Diverifikasi via Google Sheet ID: <code className="text-slate-700 font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/60">1weBRq...JE</code></span>
-            </p>
-          </div>
         </motion.div>
       </main>
 

@@ -1,880 +1,631 @@
-// Fallback aggregated BC Sheet data derived from spreadsheet 1weBRqT10YFQEg09OuwswJWsHiQWbDnCJl4Ff6OpR_JE (Sheet: BC)
+// Fallback data verified from Google Sheets "BC 2026"
+// Spreadsheet ID: 1weBRqT10YFQEg09OuwswJWsHiQWbDnCJl4Ff6OpR_JE, Sheet: BC 2026
 
-export interface BCRecord {
-  bulan: string;       // Kolom A
-  portofolio: string;  // Kolom Q
-  namaProgram: string; // Kolom R
-  groupAkun: string;   // Kolom P (REVENUE | COGS)
-  amount: number;      // Kolom G (Amount in Local Currency)
+export interface BCItemRecord {
+  bulan: string;
+  portofolio: string;
+  namaProgram: string;
+  revenue: number;
+  cogs: number;
 }
 
-export const FALLBACK_BC_DATA: BCRecord[] = [
+export type BCRecord = BCItemRecord;
+
+export const FALLBACK_BC_DATA: BCItemRecord[] = [
   {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "OSP",
-    "groupAkun": "REVENUE",
-    "amount": 26934636487
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "SDI",
-    "namaProgram": "SDI",
-    "groupAkun": "REVENUE",
-    "amount": 3271036805
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "PT 2",
-    "groupAkun": "REVENUE",
-    "amount": 3402771246
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "OSP GRANULAR",
-    "groupAkun": "REVENUE",
-    "amount": 3103364953
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "NODE B",
-    "groupAkun": "REVENUE",
-    "amount": 10694810251
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "HEM",
-    "groupAkun": "REVENUE",
-    "amount": 2581962473
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "KONSTRUKSI EKSTERNAL",
-    "groupAkun": "REVENUE",
-    "amount": 3389389281
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "NODE B OLO",
-    "groupAkun": "REVENUE",
-    "amount": 14231880375
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE AKSES PROJECT",
-    "groupAkun": "REVENUE",
-    "amount": 845771336
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING",
-    "groupAkun": "REVENUE",
-    "amount": 49009232030
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING EBIS",
-    "groupAkun": "REVENUE",
-    "amount": 1496579305
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING HSI",
-    "groupAkun": "REVENUE",
-    "amount": 4780115598
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING WIBS",
-    "groupAkun": "REVENUE",
-    "amount": 871586319
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "IOAN",
-    "groupAkun": "REVENUE",
-    "amount": 121133181843
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS SPBU",
-    "groupAkun": "REVENUE",
-    "amount": 10662909163
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "RELOK UTILITAS",
-    "groupAkun": "REVENUE",
-    "amount": 6605274199
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "SDI",
-    "namaProgram": "SURVEY & DUE DILIGENCE",
-    "groupAkun": "REVENUE",
-    "amount": 1242853398
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS ANPER",
-    "groupAkun": "REVENUE",
-    "amount": 3677783059
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS EKSTERNAL",
-    "groupAkun": "REVENUE",
-    "amount": 2836099031
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE AKSES",
-    "groupAkun": "REVENUE",
-    "amount": 2178196592
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE RECOVERY",
-    "groupAkun": "REVENUE",
-    "amount": 7471182445
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING EKSTERNAL",
-    "groupAkun": "REVENUE",
-    "amount": 177183890
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "DEPLOYMENT BACKBONE",
-    "groupAkun": "REVENUE",
-    "amount": 4006495705
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "OM BACKBONE",
-    "groupAkun": "REVENUE",
-    "amount": 2362044372
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "OSP",
-    "groupAkun": "COGS",
-    "amount": 42072567949
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "PT 2",
-    "groupAkun": "COGS",
-    "amount": 3246369960
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "OSP GRANULAR",
-    "groupAkun": "COGS",
-    "amount": 2679885003
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "NODE B",
-    "groupAkun": "COGS",
-    "amount": 11721716706
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "HEM",
-    "groupAkun": "COGS",
-    "amount": 3274427079
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "KONSTRUKSI EKSTERNAL",
-    "groupAkun": "COGS",
-    "amount": 6097040857
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "NODE B OLO",
-    "groupAkun": "COGS",
-    "amount": 9583370617
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "RELOK UTILITAS",
-    "groupAkun": "COGS",
-    "amount": 4488173485
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE AKSES PROJECT",
-    "groupAkun": "COGS",
-    "amount": 794592680
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING",
-    "groupAkun": "COGS",
-    "amount": 43169381369
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING EBIS",
-    "groupAkun": "COGS",
-    "amount": 1172320949
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING HSI",
-    "groupAkun": "COGS",
-    "amount": 3938935682
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING WIBS",
-    "groupAkun": "COGS",
-    "amount": 678295351
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "IOAN",
-    "groupAkun": "COGS",
-    "amount": 54080005512
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS SPBU",
-    "groupAkun": "COGS",
-    "amount": 5808322389
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS ANPER",
-    "groupAkun": "COGS",
-    "amount": 2752400565
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS EKSTERNAL",
-    "groupAkun": "COGS",
-    "amount": 1567715792
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE AKSES",
-    "groupAkun": "COGS",
-    "amount": 1701736388
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE RECOVERY",
-    "groupAkun": "COGS",
-    "amount": 11111737521
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "SDI",
-    "namaProgram": "SDI",
-    "groupAkun": "COGS",
-    "amount": 1761296205
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING EKSTERNAL",
-    "groupAkun": "COGS",
-    "amount": 1523011265
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "DEPLOYMENT BACKBONE",
-    "groupAkun": "COGS",
-    "amount": 3485796622
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "OM BACKBONE",
-    "groupAkun": "COGS",
-    "amount": 2183784033
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "SDI",
-    "namaProgram": "SURVEY & DUE DILIGENCE",
-    "groupAkun": "COGS",
-    "amount": 990874578
-  },
-  {
-    "bulan": "Juni",
+    "bulan": "April",
     "portofolio": "Konstruksi",
     "namaProgram": "FTM",
-    "groupAkun": "COGS",
-    "amount": 4770914348
+    "revenue": 833112345,
+    "cogs": 1664241320
   },
   {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "RELOK ALPRO",
-    "groupAkun": "COGS",
-    "amount": 773543407
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "Unassigned",
-    "groupAkun": "REVENUE",
-    "amount": 4212269606
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "Unassigned",
-    "groupAkun": "COGS",
-    "amount": 1248984487
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "Unassigned",
-    "groupAkun": "COGS",
-    "amount": 5592595876
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "Unassigned",
-    "groupAkun": "COGS",
-    "amount": 1315369947
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "SDI",
-    "namaProgram": "Unassigned",
-    "groupAkun": "COGS",
-    "amount": 698008918
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "Unassigned",
-    "groupAkun": "COGS",
-    "amount": 13793037091
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE OLO",
-    "groupAkun": "COGS",
-    "amount": 66663003
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Provisioning",
-    "namaProgram": "PT 2",
-    "groupAkun": "COGS",
-    "amount": 4139538
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "Konstruksi",
-    "namaProgram": "FTM",
-    "groupAkun": "REVENUE",
-    "amount": 1666224690
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "RELOK ALPRO",
-    "groupAkun": "REVENUE",
-    "amount": 595172172
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE OLO",
-    "groupAkun": "REVENUE",
-    "amount": 1572711092
-  },
-  {
-    "bulan": "Juni",
-    "portofolio": "MS OPEX",
-    "namaProgram": "RELOK UTILITAS",
-    "groupAkun": "COGS",
-    "amount": 818147
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "OSP",
-    "groupAkun": "REVENUE",
-    "amount": 21473094207
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "SDI",
-    "namaProgram": "SDI",
-    "groupAkun": "REVENUE",
-    "amount": 1700983605
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "PT 2",
-    "groupAkun": "REVENUE",
-    "amount": 1701385623
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "OSP GRANULAR",
-    "groupAkun": "REVENUE",
-    "amount": 1551682476
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "NODE B",
-    "groupAkun": "REVENUE",
-    "amount": 5417091047
-  },
-  {
-    "bulan": "Mei",
+    "bulan": "April",
     "portofolio": "Konstruksi",
     "namaProgram": "HEM",
-    "groupAkun": "REVENUE",
-    "amount": 1290981237
+    "revenue": 78606724,
+    "cogs": 83179380
   },
   {
-    "bulan": "Mei",
+    "bulan": "April",
     "portofolio": "Konstruksi",
     "namaProgram": "KONSTRUKSI EKSTERNAL",
-    "groupAkun": "REVENUE",
-    "amount": 1973682952
+    "revenue": 15181853,
+    "cogs": 278155000
   },
   {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "NODE B OLO",
-    "groupAkun": "REVENUE",
-    "amount": 7113503483
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE AKSES PROJECT",
-    "groupAkun": "REVENUE",
-    "amount": 422885668
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING",
-    "groupAkun": "REVENUE",
-    "amount": 23214885101
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING EBIS",
-    "groupAkun": "REVENUE",
-    "amount": 679868845
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING HSI",
-    "groupAkun": "REVENUE",
-    "amount": 2002078963
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING WIBS",
-    "groupAkun": "REVENUE",
-    "amount": 435793159
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS OPEX",
-    "namaProgram": "IOAN",
-    "groupAkun": "REVENUE",
-    "amount": 64891707263
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS SPBU",
-    "groupAkun": "REVENUE",
-    "amount": 5148680199
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "RELOK UTILITAS",
-    "groupAkun": "REVENUE",
-    "amount": 3743652316
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "SDI",
-    "namaProgram": "SURVEY & DUE DILIGENCE",
-    "groupAkun": "REVENUE",
-    "amount": 621426699
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS ANPER",
-    "groupAkun": "REVENUE",
-    "amount": 1846902367
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS EKSTERNAL",
-    "groupAkun": "REVENUE",
-    "amount": 1367913405
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE AKSES",
-    "groupAkun": "REVENUE",
-    "amount": 1089098296
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE RECOVERY",
-    "groupAkun": "REVENUE",
-    "amount": 3303272156
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING EKSTERNAL",
-    "groupAkun": "REVENUE",
-    "amount": 88591945
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "DEPLOYMENT BACKBONE",
-    "groupAkun": "REVENUE",
-    "amount": 2003247852
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS OPEX",
-    "namaProgram": "OM BACKBONE",
-    "groupAkun": "REVENUE",
-    "amount": 1181022186
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "OSP",
-    "groupAkun": "COGS",
-    "amount": 20778475382
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "PT 2",
-    "groupAkun": "COGS",
-    "amount": 1627393250
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "OSP GRANULAR",
-    "groupAkun": "COGS",
-    "amount": 1339942503
-  },
-  {
-    "bulan": "Mei",
+    "bulan": "April",
     "portofolio": "Konstruksi",
     "namaProgram": "NODE B",
-    "groupAkun": "COGS",
-    "amount": 5673053100
+    "revenue": 4791886,
+    "cogs": 356836961
   },
   {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "HEM",
-    "groupAkun": "COGS",
-    "amount": 1662412782
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "KONSTRUKSI EKSTERNAL",
-    "groupAkun": "COGS",
-    "amount": 2842665682
-  },
-  {
-    "bulan": "Mei",
+    "bulan": "April",
     "portofolio": "Konstruksi",
     "namaProgram": "NODE B OLO",
-    "groupAkun": "COGS",
-    "amount": 4443451484
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "RELOK UTILITAS",
-    "groupAkun": "COGS",
-    "amount": 2203182158
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE AKSES PROJECT",
-    "groupAkun": "COGS",
-    "amount": 397296340
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING",
-    "groupAkun": "COGS",
-    "amount": 22050818133
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING EBIS",
-    "groupAkun": "COGS",
-    "amount": 586160473
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING HSI",
-    "groupAkun": "COGS",
-    "amount": 1956374991
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING WIBS",
-    "groupAkun": "COGS",
-    "amount": 339100405
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS OPEX",
-    "namaProgram": "IOAN",
-    "groupAkun": "COGS",
-    "amount": 27122494756
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS SPBU",
-    "groupAkun": "COGS",
-    "amount": 2904050479
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS ANPER",
-    "groupAkun": "COGS",
-    "amount": 1375966983
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS OPEX",
-    "namaProgram": "MS EKSTERNAL",
-    "groupAkun": "COGS",
-    "amount": 782286099
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE AKSES",
-    "groupAkun": "COGS",
-    "amount": 849566842
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE RECOVERY",
-    "groupAkun": "COGS",
-    "amount": 5392024289
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "SDI",
-    "namaProgram": "SDI",
-    "groupAkun": "COGS",
-    "amount": 880315076
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "PROVISIONING EKSTERNAL",
-    "groupAkun": "COGS",
-    "amount": 742157161
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "DEPLOYMENT BACKBONE",
-    "groupAkun": "COGS",
-    "amount": 1742898312
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS OPEX",
-    "namaProgram": "OM BACKBONE",
-    "groupAkun": "COGS",
-    "amount": 1091892017
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "SDI",
-    "namaProgram": "SURVEY & DUE DILIGENCE",
-    "groupAkun": "COGS",
-    "amount": 495437288
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "FTM",
-    "groupAkun": "COGS",
-    "amount": 2385457174
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "RELOK ALPRO",
-    "groupAkun": "COGS",
-    "amount": 388177475
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "Unassigned",
-    "groupAkun": "REVENUE",
-    "amount": 2639558514
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "Unassigned",
-    "groupAkun": "COGS",
-    "amount": 575580771
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "Unassigned",
-    "groupAkun": "COGS",
-    "amount": 2944979278
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "Unassigned",
-    "groupAkun": "COGS",
-    "amount": 691808374
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "SDI",
-    "namaProgram": "Unassigned",
-    "groupAkun": "COGS",
-    "amount": 342315337
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS OPEX",
-    "namaProgram": "Unassigned",
-    "groupAkun": "COGS",
-    "amount": 6902064230
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE OLO",
-    "groupAkun": "COGS",
-    "amount": 24640183
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Provisioning",
-    "namaProgram": "PT 2",
-    "groupAkun": "COGS",
-    "amount": 2069769
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "Konstruksi",
-    "namaProgram": "FTM",
-    "groupAkun": "REVENUE",
-    "amount": 833112345
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "RELOK ALPRO",
-    "groupAkun": "REVENUE",
-    "amount": 406024954
-  },
-  {
-    "bulan": "Mei",
-    "portofolio": "MS CAPEX",
-    "namaProgram": "QE OLO",
-    "groupAkun": "REVENUE",
-    "amount": 786355546
+    "revenue": 3183109083,
+    "cogs": 846316752
   },
   {
     "bulan": "April",
     "portofolio": "Konstruksi",
     "namaProgram": "OSP",
-    "groupAkun": "REVENUE",
-    "amount": 16022701152
+    "revenue": 2674663,
+    "cogs": 98191222
+  },
+  {
+    "bulan": "April",
+    "portofolio": "Konstruksi",
+    "namaProgram": "PT 2",
+    "revenue": 64055703,
+    "cogs": 75951589
+  },
+  {
+    "bulan": "April",
+    "portofolio": "Konstruksi",
+    "namaProgram": "Biaya Lain-lain / Overhead (Konstruksi)",
+    "revenue": 0,
+    "cogs": 362904877
+  },
+  {
+    "bulan": "April",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "QE AKSES",
+    "revenue": 3339838,
+    "cogs": 0
+  },
+  {
+    "bulan": "April",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "QE OLO",
+    "revenue": 786355546,
+    "cogs": 10677169
+  },
+  {
+    "bulan": "April",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "QE RECOVERY",
+    "revenue": 518238450,
+    "cogs": 278316236
+  },
+  {
+    "bulan": "April",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "RELOK ALPRO",
+    "revenue": 177807184,
+    "cogs": 2605190
+  },
+  {
+    "bulan": "April",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "RELOK UTILITAS",
+    "revenue": 841457324,
+    "cogs": 86421107
+  },
+  {
+    "bulan": "April",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "Biaya Lain-lain / Overhead (MS CAPEX)",
+    "revenue": 0,
+    "cogs": 556453863
+  },
+  {
+    "bulan": "April",
+    "portofolio": "MS OPEX",
+    "namaProgram": "IOAN",
+    "revenue": 8475124385,
+    "cogs": 1726645744
+  },
+  {
+    "bulan": "April",
+    "portofolio": "MS OPEX",
+    "namaProgram": "MS ANPER",
+    "revenue": 272782400,
+    "cogs": 5973300
+  },
+  {
+    "bulan": "April",
+    "portofolio": "MS OPEX",
+    "namaProgram": "MS EKSTERNAL",
+    "revenue": 190656787,
+    "cogs": 871228
+  },
+  {
+    "bulan": "April",
+    "portofolio": "MS OPEX",
+    "namaProgram": "MS SPBU",
+    "revenue": 913463430,
+    "cogs": 860
+  },
+  {
+    "bulan": "April",
+    "portofolio": "MS OPEX",
+    "namaProgram": "Biaya Lain-lain / Overhead (MS OPEX)",
+    "revenue": 0,
+    "cogs": 4253473737
+  },
+  {
+    "bulan": "April",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING",
+    "revenue": 2617228041,
+    "cogs": 1910168477
+  },
+  {
+    "bulan": "April",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING EBIS",
+    "revenue": 17825885,
+    "cogs": 22272112
+  },
+  {
+    "bulan": "April",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING EKSTERNAL",
+    "revenue": 73990000,
+    "cogs": 732844244
+  },
+  {
+    "bulan": "April",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING HSI",
+    "revenue": 209830706,
+    "cogs": 380904179
+  },
+  {
+    "bulan": "April",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING WIBS",
+    "revenue": 0,
+    "cogs": 6180629
+  },
+  {
+    "bulan": "April",
+    "portofolio": "Provisioning",
+    "namaProgram": "PT 2",
+    "revenue": 0,
+    "cogs": 2069769
+  },
+  {
+    "bulan": "April",
+    "portofolio": "Provisioning",
+    "namaProgram": "Biaya Lain-lain / Overhead (Provisioning)",
+    "revenue": 0,
+    "cogs": 747572020
+  },
+  {
+    "bulan": "April",
+    "portofolio": "SDI",
+    "namaProgram": "SDI",
+    "revenue": 296895556,
+    "cogs": 39155193
+  },
+  {
+    "bulan": "April",
+    "portofolio": "SDI",
+    "namaProgram": "SURVEY & DUE DILIGENCE",
+    "revenue": 5287800,
+    "cogs": 0
+  },
+  {
+    "bulan": "April",
+    "portofolio": "SDI",
+    "namaProgram": "Biaya Lain-lain / Overhead (SDI)",
+    "revenue": 0,
+    "cogs": 224999888
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Konstruksi",
+    "namaProgram": "FTM",
+    "revenue": 833112345,
+    "cogs": 1664241320
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Konstruksi",
+    "namaProgram": "HEM",
+    "revenue": 78606724,
+    "cogs": 69235632
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Konstruksi",
+    "namaProgram": "KONSTRUKSI EKSTERNAL",
+    "revenue": 347704502,
+    "cogs": 352302370
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Konstruksi",
+    "namaProgram": "NODE B",
+    "revenue": 152786236,
+    "cogs": 374466530
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Konstruksi",
+    "namaProgram": "NODE B OLO",
+    "revenue": 3191749083,
+    "cogs": 846945365
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Konstruksi",
+    "namaProgram": "OSP",
+    "revenue": 2674663,
+    "cogs": 108911911
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Konstruksi",
+    "namaProgram": "PT 2",
+    "revenue": 64055703,
+    "cogs": 56135830
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Konstruksi",
+    "namaProgram": "Biaya Lain-lain / Overhead (Konstruksi)",
+    "revenue": 0,
+    "cogs": 464580123
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "QE AKSES",
+    "revenue": 3339838,
+    "cogs": 0
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "QE OLO",
+    "revenue": 786355546,
+    "cogs": 10677169
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "QE RECOVERY",
+    "revenue": 598679218,
+    "cogs": 280194757
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "RELOK ALPRO",
+    "revenue": 406024954,
+    "cogs": 5964035
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "RELOK UTILITAS",
+    "revenue": 1749754309,
+    "cogs": 84953220
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "Biaya Lain-lain / Overhead (MS CAPEX)",
+    "revenue": 0,
+    "cogs": 637023122
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "MS OPEX",
+    "namaProgram": "IOAN",
+    "revenue": 10604734479,
+    "cogs": 2236697695
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "MS OPEX",
+    "namaProgram": "MS ANPER",
+    "revenue": 296814914,
+    "cogs": 6154700
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "MS OPEX",
+    "namaProgram": "MS EKSTERNAL",
+    "revenue": 193904787,
+    "cogs": 871228
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "MS OPEX",
+    "namaProgram": "MS SPBU",
+    "revenue": 1464082526,
+    "cogs": 860
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "MS OPEX",
+    "namaProgram": "Biaya Lain-lain / Overhead (MS OPEX)",
+    "revenue": 0,
+    "cogs": 5334679416
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING",
+    "revenue": 3036068207,
+    "cogs": 1565518751
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING EBIS",
+    "revenue": 17825885,
+    "cogs": 22272112
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING EKSTERNAL",
+    "revenue": 83545000,
+    "cogs": 737461485
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING HSI",
+    "revenue": 209830706,
+    "cogs": 377085079
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING WIBS",
+    "revenue": 0,
+    "cogs": 11633682
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Provisioning",
+    "namaProgram": "PT 2",
+    "revenue": 0,
+    "cogs": 2069769
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "Provisioning",
+    "namaProgram": "Biaya Lain-lain / Overhead (Provisioning)",
+    "revenue": 0,
+    "cogs": 877195714
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "SDI",
+    "namaProgram": "SDI",
+    "revenue": 558756368,
+    "cogs": 41237838
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "SDI",
+    "namaProgram": "SURVEY & DUE DILIGENCE",
+    "revenue": 5287800,
+    "cogs": 0
+  },
+  {
+    "bulan": "Mei",
+    "portofolio": "SDI",
+    "namaProgram": "Biaya Lain-lain / Overhead (SDI)",
+    "revenue": 0,
+    "cogs": 276201859
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Konstruksi",
+    "namaProgram": "FTM",
+    "revenue": 833112345,
+    "cogs": 1664241320
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Konstruksi",
+    "namaProgram": "HEM",
+    "revenue": 78606724,
+    "cogs": 84150687
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Konstruksi",
+    "namaProgram": "KONSTRUKSI EKSTERNAL",
+    "revenue": 625023357,
+    "cogs": 941702798
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Konstruksi",
+    "namaProgram": "NODE B",
+    "revenue": 161408742,
+    "cogs": 340742106
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Konstruksi",
+    "namaProgram": "NODE B OLO",
+    "revenue": 3205262493,
+    "cogs": 1153606633
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Konstruksi",
+    "namaProgram": "OSP",
+    "revenue": 13823889,
+    "cogs": 153179154
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Konstruksi",
+    "namaProgram": "PT 2",
+    "revenue": 64055703,
+    "cogs": 78881307
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Konstruksi",
+    "namaProgram": "Biaya Lain-lain / Overhead (Konstruksi)",
+    "revenue": 0,
+    "cogs": 658370930
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "QE AKSES",
+    "revenue": 3339838,
+    "cogs": 2602703
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "QE OLO",
+    "revenue": 786355546,
+    "cogs": 32929380
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "QE RECOVERY",
+    "revenue": 1543758118,
+    "cogs": 673188531
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "RELOK ALPRO",
+    "revenue": 417364988,
+    "cogs": 25601615
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "RELOK UTILITAS",
+    "revenue": 1776020862,
+    "cogs": 182252057
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS CAPEX",
+    "namaProgram": "Biaya Lain-lain / Overhead (MS CAPEX)",
+    "revenue": 0,
+    "cogs": 647079910
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS OPEX",
+    "namaProgram": "IOAN",
+    "revenue": 12810866608,
+    "cogs": 3061267689
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS OPEX",
+    "namaProgram": "MS ANPER",
+    "revenue": 304825752,
+    "cogs": 6802700
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS OPEX",
+    "namaProgram": "MS EKSTERNAL",
+    "revenue": 297425007,
+    "cogs": 4014820
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS OPEX",
+    "namaProgram": "MS SPBU",
+    "revenue": 1829631291,
+    "cogs": 1081429
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS OPEX",
+    "namaProgram": "RELOK UTILITAS",
+    "revenue": 0,
+    "cogs": 818147
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "MS OPEX",
+    "namaProgram": "Biaya Lain-lain / Overhead (MS OPEX)",
+    "revenue": 0,
+    "cogs": 6438490484
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING",
+    "revenue": 2577234261,
+    "cogs": 2872363908
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING EBIS",
+    "revenue": 154667500,
+    "cogs": 22272112
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING EKSTERNAL",
+    "revenue": 93100000,
+    "cogs": 780775666
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING HSI",
+    "revenue": 985788378,
+    "cogs": 414579679
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Provisioning",
+    "namaProgram": "PROVISIONING WIBS",
+    "revenue": 0,
+    "cogs": 17181276
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Provisioning",
+    "namaProgram": "PT 2",
+    "revenue": 0,
+    "cogs": 2069769
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "Provisioning",
+    "namaProgram": "Biaya Lain-lain / Overhead (Provisioning)",
+    "revenue": 0,
+    "cogs": 1069952556
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "SDI",
+    "namaProgram": "SDI",
+    "revenue": 689686774,
+    "cogs": 43986536
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "SDI",
+    "namaProgram": "SURVEY & DUE DILIGENCE",
+    "revenue": 5287800,
+    "cogs": 0
+  },
+  {
+    "bulan": "Juni",
+    "portofolio": "SDI",
+    "namaProgram": "Biaya Lain-lain / Overhead (SDI)",
+    "revenue": 0,
+    "cogs": 340782074
   }
 ];
