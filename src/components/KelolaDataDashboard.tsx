@@ -30,7 +30,13 @@ import {
   UserX,
   ChevronRight,
   Workflow,
-  Code2
+  Code2,
+  Globe,
+  KeyRound,
+  Server,
+  HelpCircle,
+  ArrowRight,
+  Terminal
 } from 'lucide-react';
 import { RegionalPerformanceData, Regional, PerformanceDashboardData } from '../types';
 import { fetchUserAccounts, UserAccount, SPREADSHEET_ID, SHEET_NAME } from '../lib/auth';
@@ -91,6 +97,7 @@ export default function KelolaDataDashboard({
   const [selectedModule, setSelectedModule] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [ssoSimulationId, setSsoSimulationId] = useState<string>('');
 
   // AI Performance Evaluation Modal State
   const [aiModalState, setAiModalState] = useState<{
@@ -178,6 +185,32 @@ export default function KelolaDataDashboard({
     setTimeout(() => setCopiedId(null), 2500);
   };
 
+  // SSO Role Resolver simulation helper
+  const simulatedMatch = useMemo(() => {
+    const trimmed = ssoSimulationId.trim().toLowerCase();
+    if (!trimmed) return null;
+    const found = userList.find(u => (u.user || '').trim().toLowerCase() === trimmed);
+    if (found) {
+      const isOwner = (found.previlage || '').toUpperCase() === 'OWNER';
+      return {
+        isFound: true,
+        account: found,
+        role: isOwner ? 'OWNER' : 'USER',
+        isOwner,
+        explanation: isOwner 
+          ? `User ID "${found.user}" terdaftar di sheet [list user] dengan Kolom C bernilai "OWNER". Saat berhasil login via SSO (madiunjuara.com), akun ini seketika memperoleh wewenang OWNER (akses penuh halaman Kelola Data dibuka).`
+          : `User ID "${found.user}" terdaftar di sheet [list user] dengan Kolom C bernilai "USER". Saat berhasil login via SSO, akun ini mendapatkan hak akses USER reguler (halaman Kelola Data disembunyikan).`
+      };
+    }
+    return {
+      isFound: false,
+      account: null,
+      role: 'USER',
+      isOwner: false,
+      explanation: `User ID "${ssoSimulationId}" belum terdaftar di sheet [list user]. Jika pegawai ini berhasil login via SSO portal kantor (madiunjuara.com), sistem akan secara otomatis memberikan hak akses default USER. Untuk mengangkat akun ini menjadi OWNER, silakan tambahkan baris baru di sheet [list user] dengan User ID ini pada Kolom A dan isi Kolom C dengan "OWNER".`
+    };
+  }, [ssoSimulationId, userList]);
+
   // Compile all real indicators with dynamically bound values from app state
   const indicators: IndicatorItem[] = useMemo(() => {
     const biz = currentData.business;
@@ -230,6 +263,32 @@ export default function KelolaDataDashboard({
         currentValue: currentUserRole,
         benchmark: 'OWNER untuk akses Kelola Data',
         description: 'Otorisasi peran hak akses. Pengguna dengan status OWNER mendapatkan izin membuka halaman Kelola Data, sedangkan status USER disembunyikan.'
+      },
+      {
+        code: 'AUTH-04',
+        name: 'Otentikasi Terintegrasi SSO / LDAP',
+        module: 'AUTH',
+        moduleName: 'Autentikasi & Previlage',
+        sourceSheet: 'Portal madiunjuara.com (SSO/LDAP)',
+        sourceColumns: 'Form i_userid & i_password via /api/auth/ldap',
+        unit: 'Boolean / HTTP Status',
+        formula: 'POST /api/auth/ldap -> Target: http://madiunjuara.com/ (Binary Check: Redirect 302 / Status 200 tanpa pesan error)',
+        currentValue: 'Terintegrasi Aktif (madiunjuara.com)',
+        benchmark: 'Binary Status: 200 / 302 Sukses',
+        description: 'Verifikasi identitas kredensial pegawai kantor secara langsung ke portal SSO madiunjuara.com dengan kebijakan Zero-Credential Storage (password tidak pernah disimpan ke DB/sheet).'
+      },
+      {
+        code: 'AUTH-05',
+        name: 'Resolusi Previlage SSO Hybrid (OWNER / USER)',
+        module: 'AUTH',
+        moduleName: 'Autentikasi & Previlage',
+        sourceSheet: 'list user (Kolom A & C) + SSO',
+        sourceColumns: 'Cross-check SSO UserID -> Sheet list user Kolom A & C',
+        unit: 'Role Enum ("OWNER" | "USER")',
+        formula: 'IF SSO_Valid AND Sheet.Kolom_A.includes(SSO_User) AND Sheet.Kolom_C == "OWNER" THEN "OWNER" ELSE "USER"',
+        currentValue: `${userList.filter(u => (u.previlage || '').toUpperCase() === 'OWNER').length} Akun OWNER Terdaftar`,
+        benchmark: 'OWNER jika tercatat di Sheet Kolom C',
+        description: 'Mekanisme penetapan hak akses akun SSO. Jika User ID SSO terdaftar di sheet "list user" dengan Kolom C "OWNER", akun diberikan hak penuh OWNER. Jika tidak terdaftar atau Kolom C bernilai "USER", otomatis diberikan hak standar USER.'
       },
 
       // BUSINESS METRICS
@@ -973,27 +1032,27 @@ export default function KelolaDataDashboard({
         </div>
       </div>
 
-      {/* 4. SECTION: SPREADSHEET 'LIST USER' INSPECTOR (PREVILAGE CHECKER) */}
+      {/* 4. SECTION: SPREADSHEET 'LIST USER' INSPECTOR & SSO/LDAP LOGIC */}
       <div className="bg-white rounded-3xl p-6 lg:p-8 border border-slate-200 shadow-sm space-y-6" id="list-user-inspector-section">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5">
           <div>
             <div className="flex items-center space-x-2">
               <span className="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-extrabold uppercase tracking-wide flex items-center space-x-1">
-                <Shield className="w-3.5 h-3.5" />
-                <span>REFERENSI HAK AKSES USER</span>
+                <Shield className="w-3.5 h-3.5 text-amber-700" />
+                <span>REFERENSI HAK AKSES & LOGIKA LOGIN</span>
               </span>
               <span className="text-xs text-slate-400">•</span>
-              <span className="text-xs text-slate-500 font-semibold">Sheet: "list user"</span>
+              <span className="text-xs text-slate-500 font-semibold">Dual-Mode: Google Sheets & SSO / LDAP</span>
             </div>
             <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mt-1">
-              Daftar User & Status Previlage (Pengecekan Kolom C)
+              Otorisasi Hak Akses & Logika Autentikasi (Google Sheets vs SSO / LDAP)
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Data di bawah ini dibaca langsung dari Google Sheet <code className="text-slate-700 font-mono bg-slate-100 px-1.5 py-0.5 rounded">list user</code>. Jika Kolom C bernilai <strong className="text-emerald-700">OWNER</strong>, maka halaman Kelola Data dimunculkan. Jika berstatus <strong className="text-slate-700">USER</strong>, halaman ini disembunyikan.
+            <p className="text-xs text-slate-500 mt-1 max-w-4xl leading-relaxed">
+              Sistem Performance Control Hub mendukung otentikasi ganda: <strong>Login Langsung Database Google Sheets</strong> dan <strong>Login Enterprise SSO / LDAP (madiunjuara.com)</strong>. Bagian ini menjelaskan secara rinci alur verifikasi kredensial, proteksi zero-credential, aturan penentuan status <strong className="text-emerald-700">OWNER</strong> vs <strong className="text-slate-700">USER</strong>, serta tabel akun terdaftar.
             </p>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 shrink-0">
             <button
               onClick={() => setShowPasswords(!showPasswords)}
               className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
@@ -1010,6 +1069,276 @@ export default function KelolaDataDashboard({
               <RefreshCw className={`w-3.5 h-3.5 ${isLoadingUsers ? 'animate-spin' : ''}`} />
               <span>Refresh User List</span>
             </button>
+          </div>
+        </div>
+
+        {/* EXPLANATION PANEL: DUAL-MODE AUTHENTICATION & SSO / LDAP LOGIC */}
+        <div className="bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white rounded-2xl p-6 border border-slate-800 shadow-md space-y-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30">
+                  <Globe className="w-3 h-3" />
+                  <span>Enterprise SSO Integration</span>
+                </span>
+                <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <Lock className="w-3 h-3" />
+                  <span>Zero-Credential Storage</span>
+                </span>
+                <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded">
+                  Target: http://madiunjuara.com/
+                </span>
+              </div>
+              <h3 className="text-lg font-black text-white flex items-center space-x-2 mt-1">
+                <Server className="w-5 h-5 text-red-500" />
+                <span>Logika Autentikasi SSO / LDAP & Resolusi Hak Akses OWNER</span>
+              </h3>
+              <p className="text-xs text-slate-400">
+                Memahami bagaimana sistem memverifikasi kredensial pengguna dan memutuskan apakah seorang pengguna SSO berhak membuka halaman Kelola Data ini.
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2 self-start lg:self-center">
+              <a
+                href="http://madiunjuara.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition-colors"
+              >
+                <span>Portal SSO madiunjuara.com</span>
+                <ExternalLink className="w-3 h-3 text-slate-400" />
+              </a>
+            </div>
+          </div>
+
+          {/* 3 Step Architectural Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Card 1: Mode Google Sheets */}
+            <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/70 flex flex-col justify-between space-y-3">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono font-bold text-amber-400 uppercase tracking-wider">
+                    Mode 1: Google Sheets
+                  </span>
+                  <FileSpreadsheet className="w-4 h-4 text-amber-400" />
+                </div>
+                <h4 className="text-sm font-bold text-white mt-1">
+                  Database User Spreadsheet
+                </h4>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  Digunakan saat memilih tab <strong>"Google Sheets"</strong> di layar login.
+                </p>
+                <div className="mt-3 space-y-2 text-xs text-slate-300 bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                  <div className="flex items-start space-x-1.5">
+                    <span className="font-mono text-red-400 font-bold">•</span>
+                    <span><strong>Kolom A (USER):</strong> Username / ID dicocokkan secara <em>case-insensitive</em>.</span>
+                  </div>
+                  <div className="flex items-start space-x-1.5">
+                    <span className="font-mono text-red-400 font-bold">•</span>
+                    <span><strong>Kolom B (PASWORD):</strong> Exact match. Jika sel kosong di sheet, diizinkan masuk langsung tanpa kata sandi.</span>
+                  </div>
+                  <div className="flex items-start space-x-1.5">
+                    <span className="font-mono text-red-400 font-bold">•</span>
+                    <span><strong>Kolom C (PREVILAGE):</strong> Menentukan peran: jika <code>OWNER</code> maka halaman Kelola Data dibuka, jika <code>USER</code> maka disembunyikan.</span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-[11px] text-amber-300/90 font-medium">
+                Cocok untuk: Akun Owner utama & akun lokal darurat.
+              </div>
+            </div>
+
+            {/* Card 2: Mode SSO / LDAP */}
+            <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/70 flex flex-col justify-between space-y-3">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono font-bold text-cyan-400 uppercase tracking-wider">
+                    Mode 2: SSO / LDAP Kantor
+                  </span>
+                  <Globe className="w-4 h-4 text-cyan-400" />
+                </div>
+                <h4 className="text-sm font-bold text-white mt-1">
+                  Portal madiunjuara.com
+                </h4>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  Digunakan saat memilih tab <strong>"SSO / LDAP"</strong> di layar login.
+                </p>
+                <div className="mt-3 space-y-2 text-xs text-slate-300 bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                  <div className="flex items-start space-x-1.5">
+                    <span className="font-mono text-cyan-400 font-bold">•</span>
+                    <span><strong>Proxy Endpoint:</strong> Request dikirim ke backend <code>/api/auth/ldap</code> (alias <code>/api/auth-ldap</code>) untuk keamanan & menghindari CORS browser.</span>
+                  </div>
+                  <div className="flex items-start space-x-1.5">
+                    <span className="font-mono text-cyan-400 font-bold">•</span>
+                    <span><strong>Binary Verification:</strong> Server melakukan POST form (<code>i_userid</code> & <code>i_password</code>) ke <code>http://madiunjuara.com/</code>. Hanya mengecek status valid/tidaknya (deteksi redirect 302 atau penolakan).</span>
+                  </div>
+                  <div className="flex items-start space-x-1.5">
+                    <span className="font-mono text-cyan-400 font-bold">•</span>
+                    <span><strong>Zero-Storage:</strong> Kata sandi SSO pegawai <em>TIDAK PERNAH disimpan</em> di database maupun Google Sheets.</span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-[11px] text-cyan-300/90 font-medium">
+                Cocok untuk: Seluruh pegawai kantor dengan akun intranet aktif.
+              </div>
+            </div>
+
+            {/* Card 3: Resolusi Previlage Hybrid */}
+            <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/70 flex flex-col justify-between space-y-3">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-mono font-bold text-emerald-400 uppercase tracking-wider">
+                    Logika Otorisasi OWNER
+                  </span>
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                </div>
+                <h4 className="text-sm font-bold text-white mt-1">
+                  Bagaimana Akun SSO Menjadi OWNER?
+                </h4>
+                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  Setelah SSO memverifikasi bahwa kredensial benar, sistem melakukan cross-check ke sheet <code>list user</code>:
+                </p>
+                <div className="mt-3 space-y-2 text-xs text-slate-300 bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                  <div className="flex items-start space-x-1.5">
+                    <span className="font-mono text-emerald-400 font-bold">1.</span>
+                    <span><strong>Jika User ID ada di Kolom A & Kolom C = "OWNER":</strong> Akun SSO tersebut otomatis mendapatkan status <strong className="text-emerald-400">OWNER</strong> (Kelola Data terbuka)!</span>
+                  </div>
+                  <div className="flex items-start space-x-1.5">
+                    <span className="font-mono text-slate-400 font-bold">2.</span>
+                    <span><strong>Jika User ID ada di Kolom A & Kolom C = "USER":</strong> Akun SSO memperoleh status <strong>USER</strong> biasa.</span>
+                  </div>
+                  <div className="flex items-start space-x-1.5">
+                    <span className="font-mono text-amber-400 font-bold">3.</span>
+                    <span><strong>Jika User ID belum ada di Sheet:</strong> Sistem secara aman memberikan peran default <strong>USER</strong> (bisa melihat dashboard operasional, namun Kelola Data disembunyikan).</span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-[11px] text-emerald-300/90 font-medium">
+                Integritas: Akses Owner tetap terlindungi oleh otorisasi spreadsheet.
+              </div>
+            </div>
+          </div>
+
+          {/* INTERACTIVE SSO ROLE SIMULATOR & OWNER INSTRUCTION GUIDE */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-3 border-t border-slate-800">
+            {/* Owner Step-by-Step Guide */}
+            <div className="lg:col-span-7 bg-slate-900/80 rounded-xl p-4 border border-slate-800 space-y-3">
+              <div className="flex items-center space-x-2">
+                <HelpCircle className="w-4 h-4 text-red-400 shrink-0" />
+                <h4 className="text-xs font-black text-white uppercase tracking-wider">
+                  Panduan Bagi Owner: Cara Memberikan Akses OWNER ke Akun SSO Kantor
+                </h4>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Jika ada pimpinan atau rekan kerja yang login menggunakan akun SSO (madiunjuara.com) dan ingin diberi wewenang sebagai <strong>OWNER</strong> agar bisa membuka halaman Kelola Data ini, ikuti langkah berikut:
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                <div className="bg-slate-850 p-2.5 rounded-lg border border-slate-800">
+                  <div className="font-bold text-white flex items-center space-x-1">
+                    <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[10px] inline-flex items-center justify-center font-mono">1</span>
+                    <span>Buka Sheet</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Buka Google Sheet <code className="text-slate-200">list user</code> melalui tombol <em>"Edit di Sheet"</em>.
+                  </p>
+                </div>
+                <div className="bg-slate-850 p-2.5 rounded-lg border border-slate-800">
+                  <div className="font-bold text-white flex items-center space-x-1">
+                    <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[10px] inline-flex items-center justify-center font-mono">2</span>
+                    <span>Tulis User ID & OWNER</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Ketik User ID SSO di <strong>Kolom A</strong>. Kosongkan Kolom B. Isi <strong>Kolom C</strong> dengan <code>OWNER</code>.
+                  </p>
+                </div>
+                <div className="bg-slate-850 p-2.5 rounded-lg border border-slate-800">
+                  <div className="font-bold text-white flex items-center space-x-1">
+                    <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[10px] inline-flex items-center justify-center font-mono">3</span>
+                    <span>Refresh & Aktif</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Klik tombol <em>"Refresh User List"</em>. Saat user tersebut login via SSO, ia seketika menjadi OWNER!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Interactive SSO Simulation Box */}
+            <div className="lg:col-span-5 bg-slate-900/80 rounded-xl p-4 border border-slate-800 flex flex-col justify-between space-y-3">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-white uppercase tracking-wider flex items-center space-x-1.5">
+                    <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Simulator Resolusi Hak Akses SSO</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400">Live Evaluator</span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Uji coba status hak akses yang akan diterima User ID jika login melalui portal SSO madiunjuara.com:
+                </p>
+                <div className="mt-2.5 relative">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={ssoSimulationId}
+                    onChange={(e) => setSsoSimulationId(e.target.value)}
+                    placeholder="Ketik User ID SSO (misal: 25890026 atau owner)..."
+                    className="w-full pl-9 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500 font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Simulation Result Area */}
+              {simulatedMatch ? (
+                <div className={`p-3 rounded-xl border text-xs ${
+                  simulatedMatch.isOwner 
+                    ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200' 
+                    : 'bg-slate-800/80 border-slate-700 text-slate-300'
+                }`}>
+                  <div className="flex items-center justify-between font-bold">
+                    <div className="flex items-center space-x-1.5">
+                      {simulatedMatch.isOwner ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <Users className="w-4 h-4 text-slate-400" />
+                      )}
+                      <span>Hasil Role SSO:</span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase font-mono ${
+                      simulatedMatch.isOwner 
+                        ? 'bg-emerald-500 text-slate-950' 
+                        : 'bg-slate-700 text-slate-200'
+                    }`}>
+                      {simulatedMatch.role}
+                    </span>
+                  </div>
+                  <p className="text-[11px] mt-1.5 leading-relaxed">
+                    {simulatedMatch.explanation}
+                  </p>
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-xl border border-dashed border-slate-800 text-[11px] text-slate-500 flex items-center justify-center space-x-1.5">
+                  <Info className="w-3.5 h-3.5" />
+                  <span>Ketik User ID di atas untuk melihat simulasi penentuan role saat login SSO.</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* SUBHEADER: DAFTAR USER AKTUAL DI SHEET */}
+        <div className="flex items-center justify-between pt-2">
+          <div>
+            <h3 className="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+              <Table className="w-4 h-4 text-amber-600" />
+              <span>Daftar Akun Terdaftar di Sheet "list user" ({userList.length} Akun)</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Tabel acuan kredensial lokal dan pemetaan previlage (Kolom C) untuk pengguna lokal maupun pengguna SSO.
+            </p>
+          </div>
+          <div className="text-xs font-semibold text-slate-500">
+            Status: <span className="text-emerald-700 font-bold">{userList.filter(u => (u.previlage || '').toUpperCase() === 'OWNER').length} Akun OWNER</span>, {userList.filter(u => (u.previlage || '').toUpperCase() !== 'OWNER').length} Akun USER
           </div>
         </div>
 

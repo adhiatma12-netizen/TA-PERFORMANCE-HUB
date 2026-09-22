@@ -3383,7 +3383,7 @@ export default function ProvisioningDashboard({
           <div>
             <h4 className="text-base font-extrabold text-slate-900 flex items-center space-x-2">
               <TableIcon className="w-4 h-4 text-red-500" />
-              <span>Trend Bulanan & Detail Status Kpro</span>
+              <span>Trend Bulanan & Detail Order</span>
             </h4>
             <p className="text-xs text-slate-500 mt-1">
               <strong className="text-emerald-600 font-bold">✨ Tip: Klik angka di kolom "COMPWORK" untuk melihat detail realisasi, atau kolom "CANCLWORK" / "WORKFAIL" untuk melihat detail kendala!</strong>
@@ -3393,7 +3393,7 @@ export default function ProvisioningDashboard({
             <AIEvaluationButton
               onClick={() => {
                 openAiModal(
-                  'Tabel Trend Bulanan & Detail Status Kpro Provisioning',
+                  'Tabel Trend Bulanan & Detail Order Provisioning',
                   {
                     Tahun: selectedYear,
                     SA: selectedSA === 'All' ? 'NASIONAL' : selectedSA,

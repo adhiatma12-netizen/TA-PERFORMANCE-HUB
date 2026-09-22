@@ -868,7 +868,7 @@ export default function InteractiveCoordinatesMap({
     }));
 
     onOpenAiEvaluation(
-      'Peta Sebaran Koordinat Realisasi & Clustering PSB Provisioning',
+      'Peta Sebaran Koordinat Pelanggan & Clustering PSB Provisioning',
       {
         'Total Titik Koordinat Terpetakan': mapOrders.length,
         'Titik Realisasi Sukses (COMPWORK)': totalComp,
@@ -904,7 +904,7 @@ export default function InteractiveCoordinatesMap({
               <Globe className="w-4 h-4" />
             </span>
             <h4 className="text-base font-extrabold text-slate-900">
-              Peta Sebaran Koordinat Realisasi
+              Peta Sebaran Koordinat Pelanggan
             </h4>
           </div>
           <p className="text-xs text-slate-500 flex flex-wrap items-center gap-1.5 mt-1">

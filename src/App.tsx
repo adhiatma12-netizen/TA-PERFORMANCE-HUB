@@ -1336,16 +1336,16 @@ export default function App() {
                 )}
                 {activeTab === 'assurance' && (
                   assuranceSubTab === 'ticket_perf'
-                    ? '🛠️ Performansi Assurance - Ringkasan & Agregasi Tiket'
+                    ? '🛠️ Ringkasan & Agregasi Tiket'
                     : assuranceSubTab === 'operations'
-                    ? '🛠️ Performansi Assurance - Evaluasi Solusi Tiket'
+                    ? '🛠️ Evaluasi Solusi Tiket'
                     : assuranceSubTab === 'ticket_logs'
-                    ? '📋 Performansi Assurance - Detail Transaksi & Log Tiket (2.649 Tiket)'
+                    ? '📋 Detail Transaksi & Log Tiket'
                     : assuranceSubTab === 'kpi_ioan'
                     ? '🏆 Performansi Assurance - KPI IOAN'
                     : '🏆 Performansi Assurance - KPI ASSURANCE'
                 )}
-                {activeTab === 'provisioning' && '📦 Performansi Pemasangan Baru IndiHome (Provisioning)'}
+                {activeTab === 'provisioning' && '📦 Performansi Provisioning'}
                 {activeTab === 'qe' && '🛡️ Evaluasi QE Service Area'}
                 {activeTab === 'technician' && '👷 Produktivitas, Rating & Leaderboard Teknisi Lapangan'}
                 {activeTab === 'kelola-data' && '🗄️ Kelola Data, Link Spreadsheet & All Indikator Data'}

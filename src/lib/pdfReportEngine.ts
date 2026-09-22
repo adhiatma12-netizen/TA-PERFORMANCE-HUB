@@ -151,7 +151,7 @@ export function getDomainReportData(
       activeSubTab === 'operations'
         ? 'Evaluasi Solusi Tiket & Kendala'
         : activeSubTab === 'ticket_logs'
-        ? 'Detail Transaksi & Log Tiket (2.649 Tiket)'
+        ? 'Detail Transaksi & Log Tiket'
         : 'Ringkasan Performa & Rekapitulasi Tiket';
 
     return {

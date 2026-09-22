@@ -172,6 +172,46 @@ export const SPREADSHEET_SOURCES: SpreadsheetSourceItem[] = [
         sampleRaw: '"OWNER"',
         sampleOutput: '"Menu Kelola Data Muncul di Navigasi + Badge OWNER Emas"',
         evaluationGuide: 'Cek baris user di Kolom C. Pastikan tertulis persis "OWNER" untuk memberikan wewenang pengawasan data, atau "USER" untuk membatasi tampilan hanya pada dashboard reguler.'
+      },
+      {
+        column: 'SSO / LDAP',
+        fieldName: 'INTEGRASI SSO (madiunjuara.com)',
+        note: 'Verifikasi binary kredensial SSO kantor & sinkronisasi hak akses OWNER via Kolom A & C',
+        targetPage: 'Halaman Login (Tab SSO) & Halaman Kelola Data',
+        targetComponent: 'Tab Login SSO / LDAP, Proxy /api/auth/ldap & Evaluasi Role Previlage',
+        rawDataType: 'Form POST (i_userid, i_password) ke http://madiunjuara.com/',
+        cleanedDataType: 'JSON { success: boolean, user: string, role: "OWNER" | "USER" }',
+        formula: 'verifySso(user, pass) -> IF match(sheet.user) THEN sheet.previlage ELSE "USER"',
+        transformationLogic: 'Menerima User ID dan password dari form login SSO, memvalidasi ke server http://madiunjuara.com/ via proxy backend tanpa menyimpan password (zero-credential storage). Jika valid, sistem mencocokkan User ID dengan Kolom A sheet "list user". Jika terdaftar dengan Kolom C = "OWNER", pengguna otomatis diberi hak akses OWNER.',
+        steps: [
+          {
+            step: 1,
+            title: '1. Pengiriman Kredensial ke Endpoint Proxy',
+            description: 'Frontend mengirimkan username dan password SSO ke endpoint backend (/api/auth/ldap) untuk menghindari restriksi CORS browser.',
+            codeSnippet: 'fetch("/api/auth/ldap", { method: "POST", body: JSON.stringify({ username, password }) })'
+          },
+          {
+            step: 2,
+            title: '2. Binary Check ke http://madiunjuara.com/',
+            description: 'Backend mengirim payload form URL-encoded (i_userid & i_password) ke portal SSO, mendeteksi status 302 redirect atau respons error "salah memasukan Password".',
+            codeSnippet: 'const res = await verifySsoCredentials(username, password);'
+          },
+          {
+            step: 3,
+            title: '3. Pencocokan Previlage dengan Sheet "list user"',
+            description: 'Jika login SSO sukses, sistem mencari apakah User ID SSO tercatat di Kolom A sheet "list user". Jika Kolom C bernilai "OWNER", pengguna diberi hak OWNER. Jika tidak terdaftar, disetel sebagai USER.',
+            codeSnippet: 'const matchInSheet = registeredUsers.find(a => a.user.toLowerCase() === ssoUser.toLowerCase());\nconst userRole = matchInSheet ? (matchInSheet.previlage || "USER") : "USER";'
+          },
+          {
+            step: 4,
+            title: '4. Penetapan Sesi & Izin Akses Kelola Data',
+            description: 'Sistem menetapkan token sesi dan langsung menampilkan halaman Kelola Data bagi akun SSO yang memiliki status OWNER di sheet.',
+            codeSnippet: 'onLoginSuccess(ssoResult.user, userRole);'
+          }
+        ],
+        sampleRaw: 'User: "25890026", Pass: "******"',
+        sampleOutput: 'Status SSO: Terverifikasi, Previlage: OWNER (Akses Kelola Data Terbuka)',
+        evaluationGuide: 'Jika pegawai login via SSO dan memerlukan akses Kelola Data, cukup masukkan User ID SSO pegawai tersebut ke Kolom A sheet "list user" dan isi Kolom C dengan "OWNER". Password di sheet boleh dibiarkan kosong karena password diverifikasi langsung oleh portal SSO madiunjuara.com.'
       }
     ]
   },
@@ -859,7 +899,7 @@ export const SPREADSHEET_SOURCES: SpreadsheetSourceItem[] = [
         column: 'Kolom G & H',
         fieldName: 'LATITUDE & LONGITUDE',
         note: 'Koordinat geografis peta sebaran pemasangan',
-        targetPage: 'Performansi Provisioning (Sub-Halaman: Peta Sebaran Koordinat Realisasi)',
+        targetPage: 'Performansi Provisioning (Sub-Halaman: Peta Sebaran Koordinat Pelanggan)',
         targetComponent: 'Peta Geospasial Interaktif Leaflet & Marker Sebaran PSB',
         rawDataType: 'Float GPS Coordinate Strings (e.g. "-7.6298", "111.5239")',
         cleanedDataType: 'Pair [Lat, Lng] Numbers',

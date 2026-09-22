@@ -678,7 +678,7 @@ export default function QEDashboard({
           <div>
             <h3 className="text-base font-extrabold text-slate-900 flex items-center space-x-2">
               <Layers className="w-4.5 h-4.5 text-red-500" />
-              <span>2. Dashboard Rincian per Segment Pekerjaan</span>
+              <span>Rincian per Segment</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
               Analisis performansi, kuantitas volume, dan realisasi finansial spesifik untuk setiap segment. Klik kartu segment untuk mengaktifkan filter cepat segment.
@@ -776,7 +776,7 @@ export default function QEDashboard({
             <div>
               <h4 className="text-base font-extrabold text-slate-900 flex items-center space-x-2">
                 <Layers className="w-4 h-4 text-red-500" />
-                <span>1. Performansi Prosentase & Realisasi Segment QE</span>
+                <span>Prosentase & Realisasi Segment QE</span>
               </h4>
               <p className="text-xs text-slate-500 mt-1">
                 Ringkasan volume, realisasi finansial (kolom P), dan tingkat penyelesaian (status SELESAI) per segment pekerjaan.
@@ -786,7 +786,7 @@ export default function QEDashboard({
               size="sm"
               onClick={() =>
                 openAiModal(
-                  'Tabel Performansi Prosentase & Realisasi Segment QE',
+                  'Tabel Prosentase & Realisasi Segment QE',
                   {
                     'Total Pekerjaan': totalJobsCount,
                     'Total Revenue': `Rp ${formatIndoNumber(totalRevenue)}`,
@@ -904,7 +904,7 @@ export default function QEDashboard({
               <div>
                 <h4 className="text-base font-extrabold text-slate-900 flex items-center space-x-2">
                   <TrendingUp className="w-4 h-4 text-red-500" />
-                  <span>2. {chartType === 'tren' ? 'Grafik Perbulan Masing-Masing Segment' : 'Grafik Distribusi Realisasi Revenue per Segment'}</span>
+                  <span>{chartType === 'tren' ? 'Grafik' : 'Grafik Distribusi Realisasi Revenue per Segment'}</span>
                 </h4>
                 <p className="text-xs text-slate-500 mt-1">
                   {chartType === 'tren' 
@@ -1063,7 +1063,7 @@ export default function QEDashboard({
           <div>
             <h4 className="text-base font-extrabold text-slate-900 flex items-center space-x-2">
               <Table className="w-4.5 h-4.5 text-red-500" />
-              <span>3. Detail Transaksi & Rekapitulasi Data Pekerjaan</span>
+              <span>Detail Transaksi</span>
             </h4>
             <p className="text-xs text-slate-500 mt-0.5">
               Menampilkan detail data pilihan transaksi pekerjaan, diformat ringkas dan terpadu untuk kemudahan evaluasi.

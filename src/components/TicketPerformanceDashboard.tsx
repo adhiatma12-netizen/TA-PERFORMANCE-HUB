@@ -756,7 +756,7 @@ export default function TicketPerformanceDashboard() {
                 <span className="text-xs text-slate-400 font-medium">• Agregasi Multidimensi</span>
               </div>
               <h3 className="text-lg font-black text-slate-900 mt-1">
-                Tabel Performansi Agregasi (Sektor, Type Tiket, STO, & HVC)
+                Tabel Performansi Agregasi
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 Rangkuman performansi dan proporsi penanganan tiket berdasarkan hierarki Sektor, STO, Type Tiket, serta level Flag HVC.
