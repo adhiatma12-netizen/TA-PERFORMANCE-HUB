@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/api/auth/ldap",
+      "destination": "/api/auth/ldap"
+    },
+    {
+      "source": "/api/auth/sso",
+      "destination": "/api/auth/sso"
+    },
+    {
+      "source": "/api/auth-ldap",
+      "destination": "/api/auth-ldap"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },

@@ -54,7 +54,7 @@ app.post('/api/parse-kpi-image', async (req, res) => {
 });
 
 // API LDAP / SSO Office Authentication (Binary Check ke madiunjuara.com)
-app.post(['/api/auth/ldap', '/api/auth/sso'], async (req, res) => {
+app.post(['/api/auth/ldap', '/api/auth/sso', '/api/auth-ldap'], async (req, res) => {
   try {
     const { username, password } = req.body || {};
     const result = await verifySsoCredentials(username, password);

@@ -1,6 +1,7 @@
 /**
- * Vercel Serverless Function: POST /api/auth-ldap
- * Fallback alias untuk /api/auth/ldap
+ * Vercel Serverless Function: POST /api/auth/ldap
+ * Verifikasi kredensial SSO / LDAP ke web kantor (http://madiunjuara.com/)
+ * Binary check: Hanya mengecek validitas kredensial tanpa menyimpan data/password.
  */
 
 async function parseRequestBody(req: any): Promise<any> {
@@ -36,6 +37,7 @@ async function parseRequestBody(req: any): Promise<any> {
 }
 
 export default async function handler(req: any, res: any) {
+  // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
@@ -90,6 +92,7 @@ export default async function handler(req: any, res: any) {
 
     clearTimeout(timeoutId);
 
+    // 1. Cek Redirect HTTP 30x (PHP login form redirect ke dashboard)
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get('location') || '';
       if (location.toLowerCase().includes('login') && location.toLowerCase().includes('error')) {
@@ -110,6 +113,7 @@ export default async function handler(req: any, res: any) {
       return;
     }
 
+    // 2. HTTP error 401/403
     if (response.status === 401 || response.status === 403) {
       res.status(401).json({
         success: false,
@@ -119,9 +123,12 @@ export default async function handler(req: any, res: any) {
       return;
     }
 
+    // 3. HTTP 200 OK (Periksa body respons)
     if (response.status === 200) {
       const text = await response.text();
 
+      // Deteksi error khas EasyUI madiunjuara.com:
+      // <div style="margin:10px 0 10px 0;color:red">...: Anda salah memasukan Password</div>
       const redErrorMatch = text.match(/<div[^>]*color:\s*red[^>]*>([\s\S]*?)<\/div>/i);
       const redErrorText = redErrorMatch ? redErrorMatch[1].trim() : '';
 
@@ -142,6 +149,7 @@ export default async function handler(req: any, res: any) {
         return;
       }
 
+      // Deteksi jika server mengembalikan JSON
       try {
         const jsonData = JSON.parse(text);
         if (jsonData.success === false || jsonData.status === 'error' || jsonData.authenticated === false) {
@@ -153,7 +161,7 @@ export default async function handler(req: any, res: any) {
           return;
         }
       } catch {
-        // Not JSON
+        // Bukan JSON, respons HTML normal tanpa error div
       }
 
       res.status(200).json({
@@ -172,7 +180,7 @@ export default async function handler(req: any, res: any) {
       statusCode: 401,
     });
   } catch (err: any) {
-    console.error('[Vercel SSO Auth-ldap Handler] Error:', err);
+    console.error('[Vercel SSO Auth Handler] Error:', err);
     if (err.name === 'AbortError') {
       res.status(504).json({
         success: false,

@@ -165,39 +165,65 @@ export async function verifyLdapLogin(userInput: string, passInput: string): Pro
     };
   }
 
-  try {
-    const res = await fetch('/api/auth/ldap', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        username: trimmedUser,
-        password: trimmedPass,
-      }),
-    });
+  // Coba endpoint utama dan alias untuk kompatibilitas penuh di AI Studio (Express) & Vercel (Serverless)
+  const candidateEndpoints = ['/api/auth/ldap', '/api/auth-ldap', '/api/auth/sso'];
+  let lastErrorMessage = '';
 
-    const data = await res.json().catch(() => null);
+  for (const endpoint of candidateEndpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          username: trimmedUser,
+          password: trimmedPass,
+        }),
+      });
 
-    if (res.ok && data?.success) {
+      // Jika endpoint mengembalikan 404 atau 405 (route belum terpetakan di host), coba kandidat berikutnya
+      if (res.status === 404 || res.status === 405) {
+        continue;
+      }
+
+      // Pastikan respons bertipe JSON, bukan fallback HTML (index.html SPA)
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        continue;
+      }
+
+      const data = await res.json().catch(() => null);
+      if (!data) {
+        continue;
+      }
+
+      // Jika berhasil login
+      if (res.ok && data.success) {
+        return {
+          success: true,
+          user: data.user || trimmedUser,
+          role: data.role || 'USER',
+          message: data.message || 'Verifikasi SSO berhasil',
+        };
+      }
+
+      // Jika server secara eksplisit mengembalikan gagal autentikasi (401 / 400 / 502 / dsb)
       return {
-        success: true,
-        user: data.user || trimmedUser,
-        role: data.role || 'USER',
-        message: data.message || 'Verifikasi SSO berhasil',
+        success: false,
+        message: data.message || 'Username atau password SSO kantor salah',
       };
+    } catch (err: any) {
+      console.warn(`[SSO] Gagal menghubungi ${endpoint}:`, err);
+      lastErrorMessage = err?.message || '';
     }
-
-    // Jika response 401 atau gagal dari server SSO
-    return {
-      success: false,
-      message: data?.message || 'Username atau password SSO salah',
-    };
-  } catch (err: any) {
-    console.error('Error saat menghubungi endpoint SSO:', err);
-    return {
-      success: false,
-      message: 'Gagal terhubung ke service verifikasi SSO. Silakan gunakan metode Local.',
-    };
   }
+
+  return {
+    success: false,
+    message: lastErrorMessage
+      ? `Gagal terhubung ke service verifikasi SSO (${lastErrorMessage}). Silakan gunakan metode Local.`
+      : 'Gagal terhubung ke service verifikasi SSO di hosting ini. Silakan gunakan metode Local.',
+  };
 }

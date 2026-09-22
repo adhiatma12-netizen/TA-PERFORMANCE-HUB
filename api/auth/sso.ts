@@ -1,6 +1,6 @@
 /**
- * Vercel Serverless Function: POST /api/auth-ldap
- * Fallback alias untuk /api/auth/ldap
+ * Vercel Serverless Function: POST /api/auth/sso
+ * Alias untuk /api/auth/ldap
  */
 
 async function parseRequestBody(req: any): Promise<any> {
@@ -172,7 +172,7 @@ export default async function handler(req: any, res: any) {
       statusCode: 401,
     });
   } catch (err: any) {
-    console.error('[Vercel SSO Auth-ldap Handler] Error:', err);
+    console.error('[Vercel SSO Auth/sso Handler] Error:', err);
     if (err.name === 'AbortError') {
       res.status(504).json({
         success: false,
