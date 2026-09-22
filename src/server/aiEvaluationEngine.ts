@@ -192,7 +192,7 @@ Berikan rekomendasi pemasaran yang sangat terarah berdasarkan bukti peta sebaran
 2. 🏗️ **Ekspansi Alpro & Penambahan ODP Baru (Unserved Demand Conversion)**:
    - Rekomendasi pembangunan ODP baru dan penarikan kabel distribusi ke klaster dengan titik kendala CANCLWORK terbanyak. Setiap titik batal karena "ODP Jauh" adalah calon pelanggan pasti yang siap langsung dihubungkan saat ODP baru aktif.
 3. 💼 **Penetrasi Koridor Komersial & B2B Indibizz**:
-   - Pemasaran paket korporat Indibizz dengan SLA prioritas pada koordinat sentra bisnis, pertokoan, dan perkantoran yang teridentifikasi di peta.
+   - Pemasaran paket korporat Indibizz dengan SLA prioritas pada koordinat sentra bisnis, pertokoan, dan kawasan usaha yang teridentifikasi di peta.
 4. 🚴 **Penataan Rute & Dispatching Teknisi Spasial**:
    - Optimalisasi zonasi kerja teknisi berbasis klaster centroid agar travel time minimal, fuel cost efisien, dan response time memenuhi target SLA.`;
 
@@ -499,7 +499,7 @@ ${clusterTableContent}
   - Dampak Finansial: **Zero Waste Investment**, karena infrastruktur yang dibangun langsung terisi pelanggan aktif pada hari pertama operasi.
 
 #### 💼 3. Penetrasi Koridor Komersial & B2B Indibizz
-- **Fokus Lokasi**: Titik koordinat di sentra ruko, pasar modern, kawasan perkantoran, dan sentra UMKM kuliner.
+- **Fokus Lokasi**: Titik koordinat di sentra ruko, pasar modern, kawasan bisnis, dan sentra UMKM kuliner.
 - **Tindakan Pemasaran**:
   - Sosialisasi paket solusi bisnis terpadu Indibizz (Internet dedicated + POS Kasir + CCTV Cloud).
   - Berikan skema instalasi ekspres untuk mendukung perputaran transaksi digital UMKM.

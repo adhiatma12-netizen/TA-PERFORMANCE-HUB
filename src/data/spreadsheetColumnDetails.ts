@@ -954,7 +954,7 @@ export const SPREADSHEET_SOURCES: SpreadsheetSourceItem[] = [
         rawDataType: 'Unique Business Track String (e.g. "IBZ-2026-0091")',
         cleanedDataType: 'Clean Tracking Code',
         formula: 'COUNT(DISTINCT TrackId) -> agregasi realisasi sambungan bisnis',
-        transformationLogic: 'Menyaring pesanan internet bisnis berkecepatan tinggi yang ditujukan untuk gerai, kafe, kantor cabang, dan UMKM di wilayah kerja.',
+        transformationLogic: 'Menyaring pesanan internet bisnis berkecepatan tinggi yang ditujukan untuk gerai, kafe, cabang usaha, dan UMKM di wilayah kerja.',
         steps: [
           {
             step: 1,

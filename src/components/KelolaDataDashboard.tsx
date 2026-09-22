@@ -203,7 +203,7 @@ export default function KelolaDataDashboard({
         formula: 'Pencocokan string case-insensitive terhadap database user Google Sheets',
         currentValue: `${userList.length} Akun Terdaftar`,
         benchmark: 'Wajib terdaftar di sheet',
-        description: 'Identitas akun resmi pegawai/mitra untuk otentikasi login ke Performance Control Center.'
+        description: 'Identitas akun resmi pegawai/mitra untuk otentikasi login ke Performance Control Hub.'
       },
       {
         code: 'AUTH-02',

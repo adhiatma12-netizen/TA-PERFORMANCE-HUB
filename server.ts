@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import { processPerformanceEvaluation } from './src/server/evaluateService';
 import { parseKpiImageWithGemini } from './src/server/kpiImageService';
+import { verifySsoCredentials } from './src/server/ssoAuthService';
 
 dotenv.config();
 
@@ -48,6 +49,24 @@ app.post('/api/parse-kpi-image', async (req, res) => {
     return res.status(500).json({
       success: false,
       error: err?.message || 'Gagal memproses gambar KPI Imbal Jasa',
+    });
+  }
+});
+
+// API LDAP / SSO Office Authentication (Binary Check ke madiunjuara.com)
+app.post(['/api/auth/ldap', '/api/auth/sso'], async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    const result = await verifySsoCredentials(username, password);
+    if (!result.success) {
+      return res.status(result.statusCode || 401).json(result);
+    }
+    return res.status(200).json(result);
+  } catch (err: any) {
+    console.error('[Server] LDAP/SSO Auth endpoint error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error saat verifikasi SSO',
     });
   }
 });

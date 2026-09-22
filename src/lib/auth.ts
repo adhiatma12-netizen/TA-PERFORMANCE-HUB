@@ -133,3 +133,71 @@ export function validateLogin(userInput: string, passInput: string, accounts: Us
     message: 'silahkan hubungi admin untuk registrasi user'
   };
 }
+
+export type AuthMethod = 'local' | 'ldap';
+
+export interface LdapAuthResult {
+  success: boolean;
+  user?: string;
+  role?: string;
+  message?: string;
+}
+
+/**
+ * Melakukan verifikasi autentikasi LDAP / SSO terhadap target (http://madiunjuara.com/)
+ * Binary check: Hanya membaca status sukses atau gagal, tanpa menyimpan kredensial.
+ */
+export async function verifyLdapLogin(userInput: string, passInput: string): Promise<LdapAuthResult> {
+  const trimmedUser = userInput.trim();
+  const trimmedPass = passInput.trim();
+
+  if (!trimmedUser) {
+    return {
+      success: false,
+      message: 'Username SSO / User ID wajib diisi!',
+    };
+  }
+
+  if (!trimmedPass) {
+    return {
+      success: false,
+      message: 'Password SSO wajib diisi!',
+    };
+  }
+
+  try {
+    const res = await fetch('/api/auth/ldap', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: trimmedUser,
+        password: trimmedPass,
+      }),
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data?.success) {
+      return {
+        success: true,
+        user: data.user || trimmedUser,
+        role: data.role || 'USER',
+        message: data.message || 'Verifikasi SSO berhasil',
+      };
+    }
+
+    // Jika response 401 atau gagal dari server SSO
+    return {
+      success: false,
+      message: data?.message || 'Username atau password SSO salah',
+    };
+  } catch (err: any) {
+    console.error('Error saat menghubungi endpoint SSO:', err);
+    return {
+      success: false,
+      message: 'Gagal terhubung ke service verifikasi SSO. Silakan gunakan metode Local.',
+    };
+  }
+}

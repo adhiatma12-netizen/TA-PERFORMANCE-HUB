@@ -304,7 +304,7 @@ export function getDomainReportData(
       rcaItems: [
         { pillar: 'INFRASTRUKTUR ODP', badge: '35% Dampak', causes: ['Penambahan ODP baru belum sepenuhnya mengimbangi penjualan sales force.', 'Data inventori UIM/KPro kadang berbeda dengan kondisi fisik tiang.'] },
         { pillar: 'LOGISTIK MATERIAL', badge: '28% Dampak', causes: ['Distribusi kabel dropcore 1 core 150m pada tanggal muda mengalami lonjakan permintaan.', 'Stok ONT dual-band Wi-Fi 5 kadang harus ditransfer antar posko sub-STO.'] },
-        { pillar: 'PENJADWALAN & MITRA', badge: '22% Dampak', causes: ['Kapasitas tim instalasi mitra pada hari Sabtu mengalami over-capacity.', 'Konfirmasi kedatangan via telepon tidak diangkat pelanggan saat jam kantor.'] },
+        { pillar: 'PENJADWALAN & MITRA', badge: '22% Dampak', causes: ['Kapasitas tim instalasi mitra pada hari Sabtu mengalami over-capacity.', 'Konfirmasi kedatangan via telepon tidak diangkat pelanggan saat jam kerja.'] },
         { pillar: 'KONDISI GEOGRAFIS', badge: '15% Dampak', causes: ['Jalur kabel menyeberangi jalan nasional membutuhkan tiang sisipan khusus.', 'Jalur pepohonan bambu lebat menghalangi bentangan kabel udara.'] },
       ],
       actionPlanTable: {
@@ -570,7 +570,7 @@ export function getDomainReportData(
     ],
     rcaItems: [
       { pillar: 'FORMAT INPUT KOLOM', badge: '38% Masalah', causes: ['Pengguna kadang memasukkan format tanggal bervariasi (DD/MM/YYYY vs YYYY-MM-DD).', 'Penggunaan koma dan titik desimal campur aduk pada input manual.'] },
-      { pillar: 'JARINGAN & API GOOGLE', badge: '30% Masalah', causes: ['Koneksi internet kantor lemot dapat memperpanjang waktu unduh CSV spreadsheet.', 'Google Sheet limit 500 requests/menit pada jam kerja sibuk.'] },
+      { pillar: 'JARINGAN & API GOOGLE', badge: '30% Masalah', causes: ['Koneksi internet operasional lemot dapat memperpanjang waktu unduh CSV spreadsheet.', 'Google Sheet limit 500 requests/menit pada jam kerja sibuk.'] },
       { pillar: 'KEAMANAN AKUN', badge: '20% Masalah', causes: ['Password sederhana pada akun pengguna baru memerlukan penegakan kombinasi huruf-angka.'] },
       { pillar: 'DOKUMENTASI SISTEM', badge: '12% Masalah', causes: ['Pembaruan kamus formula memerlukan pencatatan log versi berkala saat ada KPI baru.'] },
     ],
