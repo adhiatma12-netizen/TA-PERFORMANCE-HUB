@@ -123,12 +123,12 @@ export const SYSTEM_PROCESS_STEPS: FlowStepNode[] = [
     stepNumber: '1.2B',
     type: 'PROCESS',
     title: 'Verifikasi Mode SSO / LDAP Enterprise Portal',
-    summary: 'Frontend mengirim kredensial ke proxy backend untuk diverifikasi secara langsung ke server madiunjuara.com.',
+    summary: 'Frontend mengirim kredensial ke proxy backend untuk diverifikasi secara langsung ke server portal SSO.',
     component: 'src/server/ssoAuthService.ts -> POST /api/auth/ldap',
     dataSource: {
-      sheetOrService: 'Portal Enterprise madiunjuara.com',
+      sheetOrService: 'Portal Enterprise SSO',
       columnsOrParams: 'Form URL-encoded: i_userid & i_password',
-      endpoint: 'http://madiunjuara.com/ (via server proxy /api/auth/ldap)'
+      endpoint: 'Portal SSO (via server proxy /api/auth/ldap)'
     },
     transformationLogic: 'Backend mengirim POST form urlencoded ke server intranet. Membaca status respon: jika redirect 302 atau tidak ada pesan error "salah memasukan Password", maka valid. Kebijakan Zero-Storage: password tidak pernah disimpan.',
     codeSnippet: 'const res = await verifySsoCredentials(username, password);\n// Zero-credential storage guarantee',
@@ -678,7 +678,7 @@ export const SYSTEM_PROCESS_STEPS: FlowStepNode[] = [
     stepNumber: '8.3',
     type: 'PROCESS',
     title: 'Manajemen Akun, Logika SSO & Simulator Hak Akses',
-    summary: 'Menampilkan tabel akun terdaftar di sheet "list user", penjelasan logika SSO madiunjuara.com, dan simulator role.',
+    summary: 'Menampilkan tabel akun terdaftar di sheet "list user", penjelasan logika SSO Enterprise, dan simulator role.',
     component: 'KelolaDataDashboard.tsx -> Section 4 (SSO Logic & User Table)',
     dataSource: {
       sheetOrService: 'Sheet [list user] & Portal SSO',

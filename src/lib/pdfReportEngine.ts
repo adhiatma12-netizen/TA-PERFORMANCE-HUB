@@ -148,11 +148,15 @@ export function getDomainReportData(
   if (domain === 'assurance') {
     const ass = currentData.assurance;
     const subTabName =
-      activeSubTab === 'operations'
+      activeSubTab === 'kpi_imbal_jasa'
+        ? 'KPI Assurance'
+        : activeSubTab === 'kpi_ioan'
+        ? 'KPI IOAN'
+        : activeSubTab === 'operations'
         ? 'Evaluasi Solusi Tiket & Kendala'
         : activeSubTab === 'ticket_logs'
         ? 'Detail Transaksi & Log Tiket'
-        : 'Ringkasan Performa & Rekapitulasi Tiket';
+        : 'Performansi Tiket';
 
     return {
       domainKey: 'assurance',

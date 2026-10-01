@@ -243,7 +243,7 @@ export default function App() {
     return saved !== null ? saved === 'true' : true;
   });
 
-  // Fitur Auto Hide Sidebar: setiap 3 detik maka side bar akan hide
+  // Fitur Auto Hide Sidebar / Menu Halaman: setiap 11 detik maka sidebar akan otomatis di-hide
   const autoHideTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetAutoHideTimer = useCallback(() => {
@@ -253,7 +253,7 @@ export default function App() {
     if (isSidebarOpen) {
       autoHideTimerRef.current = setTimeout(() => {
         setIsSidebarOpen(false);
-      }, 3000);
+      }, 11000);
     }
   }, [isSidebarOpen]);
 
@@ -287,7 +287,7 @@ export default function App() {
     return [...rawProvisioningData, ...q12026, ...fallbackIndibizzData];
   });
   const [provisioningSubTab, setProvisioningSubTab] = useState<'sektor' | 'tabel' | 'peta'>('sektor');
-  const [assuranceSubTab, setAssuranceSubTab] = useState<AssuranceSubTab>('ticket_perf');
+  const [assuranceSubTab, setAssuranceSubTab] = useState<AssuranceSubTab>('kpi_imbal_jasa');
   const [qeSubTab, setQeSubTab] = useState<'main' | 'detail'>('main');
   const [technicianSubTab, setTechnicianSubTab] = useState<'leaderboard' | 'progress'>('leaderboard');
   const [businessSubTab, setBusinessSubTab] = useState<'kpi' | 'trend' | 'portfolio'>('kpi');
@@ -629,8 +629,8 @@ export default function App() {
         {/* SIDEBAR NAVIGATION (EXPANDED OR COLLAPSED ICON RAIL) */}
         <aside
           className={`${
-            isSidebarOpen ? 'w-72' : 'w-[70px]'
-          } bg-white border-r border-slate-200/90 shadow-xs shrink-0 flex flex-col sticky top-[69px] h-[calc(100vh-69px)] z-30 transition-all duration-300 ease-in-out`}
+            isSidebarOpen ? 'w-80' : 'w-[70px]'
+          } bg-[#e8edf4] border-r border-slate-300 shadow-xs shrink-0 flex flex-col sticky top-[69px] h-[calc(100vh-69px)] z-30 transition-all duration-300 ease-in-out`}
           id="sidebar-navigation"
           onMouseEnter={resetAutoHideTimer}
           onMouseMove={resetAutoHideTimer}
@@ -638,7 +638,7 @@ export default function App() {
           onClick={resetAutoHideTimer}
         >
           {/* Sidebar Top Header with Arrow Button to HIDE or UNHIDE (Cukup Tanda Panah Saja) */}
-          <div className={`p-3 border-b border-slate-100 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'} bg-slate-50/90 sticky top-0 z-10 backdrop-blur-xs min-h-[57px]`}>
+          <div className={`p-3 border-b border-slate-300/80 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'} bg-slate-200/80 sticky top-0 z-10 backdrop-blur-xs min-h-[57px]`}>
             {isSidebarOpen && (
               <div className="flex items-center space-x-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
@@ -651,7 +651,7 @@ export default function App() {
             {/* Tombol Panah Hide/Unhide di dalam Sidebar */}
             <button
               onClick={toggleSidebar}
-              className={`flex items-center justify-center p-2 bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 rounded-xl transition-all shadow-2xs cursor-pointer group ${!isSidebarOpen ? 'w-10 h-10' : ''}`}
+              className={`flex items-center justify-center p-2 bg-white hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-300 rounded-xl transition-all shadow-2xs cursor-pointer group ${!isSidebarOpen ? 'w-10 h-10' : ''}`}
               title={isSidebarOpen ? "Sembunyikan Menu (Hide)" : "Tampilkan Menu Penuh (Unhide)"}
               id="btn-sidebar-arrow-toggle"
             >
@@ -672,7 +672,7 @@ export default function App() {
                 className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all cursor-pointer group relative ${
                   activeTab === 'business'
                     ? 'bg-red-600 text-white shadow-md shadow-red-600/25 ring-2 ring-red-600/30'
-                    : 'bg-white text-slate-600 hover:bg-red-50 hover:text-red-600 border border-slate-200/80 shadow-2xs'
+                    : 'bg-white text-slate-700 hover:bg-red-50 hover:text-red-600 border border-slate-300/90 shadow-2xs'
                 }`}
                 title="Performansi Bisnis"
                 id="sidebar-collapsed-icon-business"
@@ -686,7 +686,7 @@ export default function App() {
                 className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all cursor-pointer group relative ${
                   activeTab === 'assurance'
                     ? 'bg-red-600 text-white shadow-md shadow-red-600/25 ring-2 ring-red-600/30'
-                    : 'bg-white text-slate-600 hover:bg-red-50 hover:text-red-600 border border-slate-200/80 shadow-2xs'
+                    : 'bg-white text-slate-700 hover:bg-red-50 hover:text-red-600 border border-slate-300/90 shadow-2xs'
                 }`}
                 title="Performansi Assurance (Tiket & Gangguan)"
                 id="sidebar-collapsed-icon-assurance"
@@ -700,9 +700,9 @@ export default function App() {
                 className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all cursor-pointer group relative ${
                   activeTab === 'provisioning'
                     ? 'bg-red-600 text-white shadow-md shadow-red-600/25 ring-2 ring-red-600/30'
-                    : 'bg-white text-slate-600 hover:bg-red-50 hover:text-red-600 border border-slate-200/80 shadow-2xs'
+                    : 'bg-white text-slate-700 hover:bg-red-50 hover:text-red-600 border border-slate-300/90 shadow-2xs'
                 }`}
-                title="Performansi Provisioning (Pasang Baru & Kpro)"
+                title="Performansi Provisioning (Pasang Baru All)"
                 id="sidebar-collapsed-icon-provisioning"
               >
                 <UserPlus className="w-5 h-5" />
@@ -714,7 +714,7 @@ export default function App() {
                 className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all cursor-pointer group relative ${
                   activeTab === 'qe'
                     ? 'bg-red-600 text-white shadow-md shadow-red-600/25 ring-2 ring-red-600/30'
-                    : 'bg-white text-slate-600 hover:bg-red-50 hover:text-red-600 border border-slate-200/80 shadow-2xs'
+                    : 'bg-white text-slate-700 hover:bg-red-50 hover:text-red-600 border border-slate-300/90 shadow-2xs'
                 }`}
                 title="Performansi QE (Safety & Mutu K3)"
                 id="sidebar-collapsed-icon-qe"
@@ -728,7 +728,7 @@ export default function App() {
                 className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all cursor-pointer group relative ${
                   activeTab === 'technician'
                     ? 'bg-red-600 text-white shadow-md shadow-red-600/25 ring-2 ring-red-600/30'
-                    : 'bg-white text-slate-600 hover:bg-red-50 hover:text-red-600 border border-slate-200/80 shadow-2xs'
+                    : 'bg-white text-slate-700 hover:bg-red-50 hover:text-red-600 border border-slate-300/90 shadow-2xs'
                 }`}
                 title="Performansi Teknisi (Produktivitas & Leaderboard)"
                 id="sidebar-collapsed-icon-technician"
@@ -743,7 +743,7 @@ export default function App() {
                   className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all cursor-pointer group relative ${
                     activeTab === 'kelola-data'
                       ? 'bg-red-600 text-white shadow-md shadow-red-600/25 ring-2 ring-red-600/30'
-                      : 'bg-white text-slate-600 hover:bg-red-50 hover:text-red-600 border border-slate-200/80 shadow-2xs'
+                      : 'bg-white text-slate-700 hover:bg-red-50 hover:text-red-600 border border-slate-300/90 shadow-2xs'
                   }`}
                   title="Kelola Data (OWNER - Spreadsheet & Konfigurasi)"
                   id="sidebar-collapsed-icon-kelola-data"
@@ -757,25 +757,29 @@ export default function App() {
             /* JIKA SIDEBAR DI UNHIDE: MUNCULKAN FULL LIST LENGKAP */
             <div className="p-3 space-y-2 flex-1 overflow-y-auto" id="sidebar-expanded-list">
               {/* Item 1: Bisnis */}
-              <div className="rounded-xl overflow-hidden bg-slate-50/40 border border-slate-100/90 transition-all">
-                <div className="flex items-center justify-between p-1">
+              <div className={`rounded-xl overflow-hidden transition-all border ${
+                activeTab === 'business'
+                  ? 'border-red-300 bg-white shadow-xs'
+                  : 'border-slate-300/80 bg-white hover:border-slate-400 hover:shadow-xs'
+              }`}>
+                <div className="flex items-center justify-between p-1.5 gap-1.5">
                   <button
                     onClick={() => handleNavigateTab('business')}
-                    className={`flex-1 flex items-center space-x-3 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer ${
+                    className={`flex-1 min-w-0 flex items-center space-x-2.5 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer ${
                       activeTab === 'business'
-                        ? 'bg-red-600 text-white shadow-sm font-bold'
-                        : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-950 font-medium'
+                        ? 'bg-red-600 text-white shadow-xs font-bold'
+                        : 'text-slate-700 hover:bg-slate-100/90 hover:text-slate-950 font-medium'
                     }`}
                     id="sidebar-tab-business"
                   >
                     <div className={`p-2 rounded-lg shrink-0 transition-colors ${
-                      activeTab === 'business' ? 'bg-red-700/60 text-white' : 'bg-white text-slate-600 shadow-2xs group-hover:text-red-600'
+                      activeTab === 'business' ? 'bg-red-700/60 text-white' : 'bg-slate-100 text-slate-600 shadow-2xs group-hover:text-red-600 group-hover:bg-red-50'
                     }`}>
                       <BarChart3 className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold truncate">Performansi Bisnis</div>
-                      <div className={`text-[10px] truncate ${activeTab === 'business' ? 'text-red-100' : 'text-slate-400'}`}>
+                      <div className="text-xs font-bold truncate leading-tight">Performansi Bisnis</div>
+                      <div className={`text-[10px] leading-tight truncate mt-0.5 ${activeTab === 'business' ? 'text-red-100' : 'text-slate-400'}`}>
                         Budget Commite Branch
                       </div>
                     </div>
@@ -783,10 +787,10 @@ export default function App() {
                   <button
                     type="button"
                     onClick={(e) => toggleMenuExpand('business', e)}
-                    className={`p-2 rounded-lg ml-1 shrink-0 transition-all cursor-pointer ${
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 transition-all cursor-pointer ${
                       activeTab === 'business'
-                        ? 'bg-red-700/40 hover:bg-red-700 text-white'
-                        : 'bg-white hover:bg-slate-200/80 text-slate-500 hover:text-slate-800 border border-slate-200/60 shadow-2xs'
+                        ? 'bg-red-700/40 hover:bg-red-700 text-white border border-red-500/40'
+                        : 'bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-300 shadow-2xs'
                     }`}
                     title={expandedMenus.business ? 'Sembunyikan Sub Halaman (-)' : 'Tampilkan Sub Halaman (+)'}
                   >
@@ -800,7 +804,7 @@ export default function App() {
 
                 {/* Sub-menu Bisnis (default sembunyi, muncul saat user pencet plus atau pilih menu) */}
                 {expandedMenus.business && (
-                  <div className="px-2 py-1.5 space-y-1 bg-white/70 border-t border-slate-100">
+                  <div className="px-2 py-1.5 space-y-1 bg-slate-50/70 border-t border-slate-100">
                     <button
                       onClick={() => {
                         handleNavigateTab('business');
@@ -808,12 +812,12 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'business' && businessSubTab === 'kpi'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <TrendingUp className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'business' && businessSubTab === 'kpi' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Ringkasan & KPI Finansial</span>
+                      <span className="truncate text-[11px] leading-tight">Ringkasan & KPI Finansial</span>
                     </button>
                     <button
                       onClick={() => {
@@ -822,12 +826,12 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'business' && businessSubTab === 'trend'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <BarChart2 className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'business' && businessSubTab === 'trend' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Trend Finansial Perbulan</span>
+                      <span className="truncate text-[11px] leading-tight">Trend Finansial Perbulan</span>
                     </button>
                     <button
                       onClick={() => {
@@ -836,37 +840,41 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'business' && businessSubTab === 'portfolio'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <Briefcase className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'business' && businessSubTab === 'portfolio' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Detail Portofolio & Program</span>
+                      <span className="truncate text-[11px] leading-tight">Detail Portofolio & Program</span>
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Item 2: Assurance */}
-              <div className="rounded-xl overflow-hidden bg-slate-50/40 border border-slate-100/90 transition-all">
-                <div className="flex items-center justify-between p-1">
+              <div className={`rounded-xl overflow-hidden transition-all border ${
+                activeTab === 'assurance'
+                  ? 'border-red-300 bg-white shadow-xs'
+                  : 'border-slate-300/80 bg-white hover:border-slate-400 hover:shadow-xs'
+              }`}>
+                <div className="flex items-center justify-between p-1.5 gap-1.5">
                   <button
                     onClick={() => handleNavigateTab('assurance')}
-                    className={`flex-1 flex items-center space-x-3 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer ${
+                    className={`flex-1 min-w-0 flex items-center space-x-2.5 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer ${
                       activeTab === 'assurance'
-                        ? 'bg-red-600 text-white shadow-sm font-bold'
-                        : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-950 font-medium'
+                        ? 'bg-red-600 text-white shadow-xs font-bold'
+                        : 'text-slate-700 hover:bg-slate-100/90 hover:text-slate-950 font-medium'
                     }`}
                     id="sidebar-tab-assurance"
                   >
                     <div className={`p-2 rounded-lg shrink-0 transition-colors ${
-                      activeTab === 'assurance' ? 'bg-red-700/60 text-white' : 'bg-white text-slate-600 shadow-2xs group-hover:text-red-600'
+                      activeTab === 'assurance' ? 'bg-red-700/60 text-white' : 'bg-slate-100 text-slate-600 shadow-2xs group-hover:text-red-600 group-hover:bg-red-50'
                     }`}>
                       <ShieldCheck className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold truncate">Performansi Assurance</div>
-                      <div className={`text-[10px] truncate ${activeTab === 'assurance' ? 'text-red-100' : 'text-slate-400'}`}>
+                      <div className="text-xs font-bold truncate leading-tight">Performansi Assurance</div>
+                      <div className={`text-[10px] leading-tight truncate mt-0.5 ${activeTab === 'assurance' ? 'text-red-100' : 'text-slate-400'}`}>
                         Tiket & Penanganan Gangguan
                       </div>
                     </div>
@@ -874,10 +882,10 @@ export default function App() {
                   <button
                     type="button"
                     onClick={(e) => toggleMenuExpand('assurance', e)}
-                    className={`p-2 rounded-lg ml-1 shrink-0 transition-all cursor-pointer ${
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 transition-all cursor-pointer ${
                       activeTab === 'assurance'
-                        ? 'bg-red-700/40 hover:bg-red-700 text-white'
-                        : 'bg-white hover:bg-slate-200/80 text-slate-500 hover:text-slate-800 border border-slate-200/60 shadow-2xs'
+                        ? 'bg-red-700/40 hover:bg-red-700 text-white border border-red-500/40'
+                        : 'bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-300 shadow-2xs'
                     }`}
                     title={expandedMenus.assurance ? 'Sembunyikan Sub Halaman (-)' : 'Tampilkan Sub Halaman (+)'}
                   >
@@ -891,7 +899,22 @@ export default function App() {
 
                 {/* Sub-menu Assurance (default sembunyi, muncul saat user pencet plus atau pilih menu) */}
                 {expandedMenus.assurance && (
-                  <div className="px-2 py-1.5 space-y-1 bg-white/70 border-t border-slate-100">
+                  <div className="px-2 py-1.5 space-y-1 bg-slate-50/70 border-t border-slate-100">
+                    <button
+                      onClick={() => {
+                        handleNavigateTab('assurance');
+                        setAssuranceSubTab('kpi_imbal_jasa');
+                      }}
+                      className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
+                        activeTab === 'assurance' && assuranceSubTab === 'kpi_imbal_jasa'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
+                      }`}
+                      id="sidebar-subtab-kpi-imbal-jasa"
+                    >
+                      <Award className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'assurance' && assuranceSubTab === 'kpi_imbal_jasa' ? 'text-red-600' : 'text-slate-400'}`} />
+                      <span className="truncate text-[11px] leading-tight">KPI Assurance</span>
+                    </button>
                     <button
                       onClick={() => {
                         handleNavigateTab('assurance');
@@ -899,12 +922,12 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'assurance' && assuranceSubTab === 'ticket_perf'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <Ticket className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'assurance' && assuranceSubTab === 'ticket_perf' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Performansi Tiket</span>
+                      <span className="truncate text-[11px] leading-tight">Performansi Tiket</span>
                     </button>
                     <button
                       onClick={() => {
@@ -913,12 +936,12 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'assurance' && assuranceSubTab === 'operations'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <Activity className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'assurance' && assuranceSubTab === 'operations' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Evaluasi Solusi Tiket</span>
+                      <span className="truncate text-[11px] leading-tight">Evaluasi Solusi Tiket</span>
                     </button>
                     <button
                       onClick={() => {
@@ -927,63 +950,52 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'assurance' && assuranceSubTab === 'ticket_logs'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <FileSpreadsheet className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'assurance' && assuranceSubTab === 'ticket_logs' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Detail Transaksi & Log Tiket</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleNavigateTab('assurance');
-                        setAssuranceSubTab('kpi_imbal_jasa');
-                      }}
-                      className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
-                        activeTab === 'assurance' && assuranceSubTab === 'kpi_imbal_jasa'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
-                      }`}
-                      id="sidebar-subtab-kpi-imbal-jasa"
-                    >
-                      <Award className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'assurance' && assuranceSubTab === 'kpi_imbal_jasa' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">KPI ASSURANCE</span>
+                      <span className="truncate text-[11px] leading-tight">Detail Transaksi & Log Tiket</span>
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Item 3: Provisioning */}
-              <div className="rounded-xl overflow-hidden bg-slate-50/40 border border-slate-100/90 transition-all">
-                <div className="flex items-center justify-between p-1">
+              <div className={`rounded-xl overflow-hidden transition-all border ${
+                activeTab === 'provisioning'
+                  ? 'border-red-300 bg-white shadow-xs'
+                  : 'border-slate-300/80 bg-white hover:border-slate-400 hover:shadow-xs'
+              }`}>
+                <div className="flex items-center justify-between p-1.5 gap-1.5">
                   <button
                     onClick={() => handleNavigateTab('provisioning')}
-                    className={`flex-1 flex items-center space-x-3 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer ${
+                    className={`flex-1 min-w-0 flex items-center space-x-2.5 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer ${
                       activeTab === 'provisioning'
-                        ? 'bg-red-600 text-white shadow-sm font-bold'
-                        : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-950 font-medium'
+                        ? 'bg-red-600 text-white shadow-xs font-bold'
+                        : 'text-slate-700 hover:bg-slate-100/90 hover:text-slate-950 font-medium'
                     }`}
                     id="sidebar-tab-provisioning"
                   >
                     <div className={`p-2 rounded-lg shrink-0 transition-colors ${
-                      activeTab === 'provisioning' ? 'bg-red-700/60 text-white' : 'bg-white text-slate-600 shadow-2xs group-hover:text-red-600'
+                      activeTab === 'provisioning' ? 'bg-red-700/60 text-white' : 'bg-slate-100 text-slate-600 shadow-2xs group-hover:text-red-600 group-hover:bg-red-50'
                     }`}>
                       <UserPlus className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold truncate">Performansi Provisioning</div>
-                      <div className={`text-[10px] truncate ${activeTab === 'provisioning' ? 'text-red-100' : 'text-slate-400'}`}>
-                        Pasang Baru & Kpro
+                      <div className="text-xs font-bold truncate leading-tight">Performansi Provisioning</div>
+                      <div className={`text-[10px] leading-tight truncate mt-0.5 ${activeTab === 'provisioning' ? 'text-red-100' : 'text-slate-400'}`}>
+                        Pasang Baru All
                       </div>
                     </div>
                   </button>
                   <button
                     type="button"
                     onClick={(e) => toggleMenuExpand('provisioning', e)}
-                    className={`p-2 rounded-lg ml-1 shrink-0 transition-all cursor-pointer ${
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 transition-all cursor-pointer ${
                       activeTab === 'provisioning'
-                        ? 'bg-red-700/40 hover:bg-red-700 text-white'
-                        : 'bg-white hover:bg-slate-200/80 text-slate-500 hover:text-slate-800 border border-slate-200/60 shadow-2xs'
+                        ? 'bg-red-700/40 hover:bg-red-700 text-white border border-red-500/40'
+                        : 'bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-300 shadow-2xs'
                     }`}
                     title={expandedMenus.provisioning ? 'Sembunyikan Sub Halaman (-)' : 'Tampilkan Sub Halaman (+)'}
                   >
@@ -997,7 +1009,7 @@ export default function App() {
 
                 {/* Sub-menu Provisioning (default sembunyi, muncul saat user pencet plus atau pilih menu) */}
                 {expandedMenus.provisioning && (
-                  <div className="px-2 py-1.5 space-y-1 bg-white/70 border-t border-slate-100">
+                  <div className="px-2 py-1.5 space-y-1 bg-slate-50/70 border-t border-slate-100">
                     <button
                       onClick={() => {
                         handleNavigateTab('provisioning');
@@ -1005,12 +1017,12 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'provisioning' && provisioningSubTab === 'sektor'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <PieChart className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'provisioning' && provisioningSubTab === 'sektor' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Kinerja Sektor & Bulanan</span>
+                      <span className="truncate text-[11px] leading-tight">Kinerja Sektor & Bulanan</span>
                     </button>
                     <button
                       onClick={() => {
@@ -1019,12 +1031,12 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'provisioning' && provisioningSubTab === 'tabel'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <Table className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'provisioning' && provisioningSubTab === 'tabel' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Trend Bulanan & Kpro</span>
+                      <span className="truncate text-[11px] leading-tight">Trend Bulanan & Kpro</span>
                     </button>
                     <button
                       onClick={() => {
@@ -1033,37 +1045,41 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'provisioning' && provisioningSubTab === 'peta'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <Globe className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'provisioning' && provisioningSubTab === 'peta' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Peta Koordinat Realisasi</span>
+                      <span className="truncate text-[11px] leading-tight">Peta Koordinat Realisasi</span>
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Item 4: QE */}
-              <div className="rounded-xl overflow-hidden bg-slate-50/40 border border-slate-100/90 transition-all">
-                <div className="flex items-center justify-between p-1">
+              <div className={`rounded-xl overflow-hidden transition-all border ${
+                activeTab === 'qe'
+                  ? 'border-red-300 bg-white shadow-xs'
+                  : 'border-slate-300/80 bg-white hover:border-slate-400 hover:shadow-xs'
+              }`}>
+                <div className="flex items-center justify-between p-1.5 gap-1.5">
                   <button
                     onClick={() => handleNavigateTab('qe')}
-                    className={`flex-1 flex items-center space-x-3 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer ${
+                    className={`flex-1 min-w-0 flex items-center space-x-2.5 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer ${
                       activeTab === 'qe'
-                        ? 'bg-red-600 text-white shadow-sm font-bold'
-                        : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-950 font-medium'
+                        ? 'bg-red-600 text-white shadow-xs font-bold'
+                        : 'text-slate-700 hover:bg-slate-100/90 hover:text-slate-950 font-medium'
                     }`}
                     id="sidebar-tab-qe"
                   >
                     <div className={`p-2 rounded-lg shrink-0 transition-colors ${
-                      activeTab === 'qe' ? 'bg-red-700/60 text-white' : 'bg-white text-slate-600 shadow-2xs group-hover:text-red-600'
+                      activeTab === 'qe' ? 'bg-red-700/60 text-white' : 'bg-slate-100 text-slate-600 shadow-2xs group-hover:text-red-600 group-hover:bg-red-50'
                     }`}>
                       <ClipboardCheck className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold truncate">Performansi QE</div>
-                      <div className={`text-[10px] truncate ${activeTab === 'qe' ? 'text-red-100' : 'text-slate-400'}`}>
+                      <div className="text-xs font-bold truncate leading-tight">Performansi QE</div>
+                      <div className={`text-[10px] leading-tight truncate mt-0.5 ${activeTab === 'qe' ? 'text-red-100' : 'text-slate-400'}`}>
                         Safety & Mutu K3 Service Area
                       </div>
                     </div>
@@ -1071,10 +1087,10 @@ export default function App() {
                   <button
                     type="button"
                     onClick={(e) => toggleMenuExpand('qe', e)}
-                    className={`p-2 rounded-lg ml-1 shrink-0 transition-all cursor-pointer ${
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 transition-all cursor-pointer ${
                       activeTab === 'qe'
-                        ? 'bg-red-700/40 hover:bg-red-700 text-white'
-                        : 'bg-white hover:bg-slate-200/80 text-slate-500 hover:text-slate-800 border border-slate-200/60 shadow-2xs'
+                        ? 'bg-red-700/40 hover:bg-red-700 text-white border border-red-500/40'
+                        : 'bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-300 shadow-2xs'
                     }`}
                     title={expandedMenus.qe ? 'Sembunyikan Sub Halaman (-)' : 'Tampilkan Sub Halaman (+)'}
                   >
@@ -1088,7 +1104,7 @@ export default function App() {
 
                 {/* Sub-menu QE (default sembunyi, muncul saat user pencet plus atau pilih menu) */}
                 {expandedMenus.qe && (
-                  <div className="px-2 py-1.5 space-y-1 bg-white/70 border-t border-slate-100">
+                  <div className="px-2 py-1.5 space-y-1 bg-slate-50/70 border-t border-slate-100">
                     <button
                       onClick={() => {
                         handleNavigateTab('qe');
@@ -1096,12 +1112,12 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'qe' && qeSubTab === 'main'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <Layers className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'qe' && qeSubTab === 'main' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Performansi & Tren Grafik</span>
+                      <span className="truncate text-[11px] leading-tight">Performansi & Tren Grafik</span>
                     </button>
                     <button
                       onClick={() => {
@@ -1110,37 +1126,41 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'qe' && qeSubTab === 'detail'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <Table className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'qe' && qeSubTab === 'detail' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Detail Transaksi & Rekap</span>
+                      <span className="truncate text-[11px] leading-tight">Detail Transaksi & Rekap</span>
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Item 5: Teknisi */}
-              <div className="rounded-xl overflow-hidden bg-slate-50/40 border border-slate-100/90 transition-all">
-                <div className="flex items-center justify-between p-1">
+              <div className={`rounded-xl overflow-hidden transition-all border ${
+                activeTab === 'technician'
+                  ? 'border-red-300 bg-white shadow-xs'
+                  : 'border-slate-300/80 bg-white hover:border-slate-400 hover:shadow-xs'
+              }`}>
+                <div className="flex items-center justify-between p-1.5 gap-1.5">
                   <button
                     onClick={() => handleNavigateTab('technician')}
-                    className={`flex-1 flex items-center space-x-3 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer ${
+                    className={`flex-1 min-w-0 flex items-center space-x-2.5 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer ${
                       activeTab === 'technician'
-                        ? 'bg-red-600 text-white shadow-sm font-bold'
-                        : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-950 font-medium'
+                        ? 'bg-red-600 text-white shadow-xs font-bold'
+                        : 'text-slate-700 hover:bg-slate-100/90 hover:text-slate-950 font-medium'
                     }`}
                     id="sidebar-tab-technician"
                   >
                     <div className={`p-2 rounded-lg shrink-0 transition-colors ${
-                      activeTab === 'technician' ? 'bg-red-700/60 text-white' : 'bg-white text-slate-600 shadow-2xs group-hover:text-red-600'
+                      activeTab === 'technician' ? 'bg-red-700/60 text-white' : 'bg-slate-100 text-slate-600 shadow-2xs group-hover:text-red-600 group-hover:bg-red-50'
                     }`}>
                       <Users className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold truncate">Performansi Teknisi</div>
-                      <div className={`text-[10px] truncate ${activeTab === 'technician' ? 'text-red-100' : 'text-slate-400'}`}>
+                      <div className="text-xs font-bold truncate leading-tight">Performansi Teknisi</div>
+                      <div className={`text-[10px] leading-tight truncate mt-0.5 ${activeTab === 'technician' ? 'text-red-100' : 'text-slate-400'}`}>
                         Produktivitas & Leaderboard
                       </div>
                     </div>
@@ -1148,10 +1168,10 @@ export default function App() {
                   <button
                     type="button"
                     onClick={(e) => toggleMenuExpand('technician', e)}
-                    className={`p-2 rounded-lg ml-1 shrink-0 transition-all cursor-pointer ${
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 transition-all cursor-pointer ${
                       activeTab === 'technician'
-                        ? 'bg-red-700/40 hover:bg-red-700 text-white'
-                        : 'bg-white hover:bg-slate-200/80 text-slate-500 hover:text-slate-800 border border-slate-200/60 shadow-2xs'
+                        ? 'bg-red-700/40 hover:bg-red-700 text-white border border-red-500/40'
+                        : 'bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-300 shadow-2xs'
                     }`}
                     title={expandedMenus.technician ? 'Sembunyikan Sub Halaman (-)' : 'Tampilkan Sub Halaman (+)'}
                   >
@@ -1165,7 +1185,7 @@ export default function App() {
 
                 {/* Sub-menu Teknisi (default sembunyi, muncul saat user pencet plus atau pilih menu) */}
                 {expandedMenus.technician && (
-                  <div className="px-2 py-1.5 space-y-1 bg-white/70 border-t border-slate-100">
+                  <div className="px-2 py-1.5 space-y-1 bg-slate-50/70 border-t border-slate-100">
                     <button
                       onClick={() => {
                         handleNavigateTab('technician');
@@ -1173,12 +1193,12 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'technician' && technicianSubTab === 'leaderboard'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <Award className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'technician' && technicianSubTab === 'leaderboard' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Leaderboard & Profil Teknisi</span>
+                      <span className="truncate text-[11px] leading-tight">Leaderboard & Profil Teknisi</span>
                     </button>
                     <button
                       onClick={() => {
@@ -1187,12 +1207,12 @@ export default function App() {
                       }}
                       className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                         activeTab === 'technician' && technicianSubTab === 'progress'
-                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                          ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                          : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                       }`}
                     >
                       <Activity className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'technician' && technicianSubTab === 'progress' ? 'text-red-600' : 'text-slate-400'}`} />
-                      <span className="truncate text-[11px]">Tracking Progres Harian</span>
+                      <span className="truncate text-[11px] leading-tight">Tracking Progres Harian</span>
                     </button>
                   </div>
                 )}
@@ -1200,30 +1220,34 @@ export default function App() {
 
               {/* Item 6: Kelola Data (Khusus OWNER) */}
               {isOwner && (
-                <div className="rounded-xl overflow-hidden bg-slate-50/40 border border-slate-100/90 transition-all">
-                  <div className="flex items-center justify-between p-1">
+                <div className={`rounded-xl overflow-hidden transition-all border ${
+                  activeTab === 'kelola-data'
+                    ? 'border-red-300 bg-white shadow-xs'
+                    : 'border-slate-300/80 bg-white hover:border-slate-400 hover:shadow-xs'
+                }`}>
+                  <div className="flex items-center justify-between p-1.5 gap-1.5">
                     <button
                       onClick={() => handleNavigateTab('kelola-data')}
-                      className={`flex-1 flex items-center space-x-3 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer relative ${
+                      className={`flex-1 min-w-0 flex items-center space-x-2.5 px-2.5 py-2 rounded-lg text-left transition-all group cursor-pointer relative ${
                         activeTab === 'kelola-data'
-                          ? 'bg-red-600 text-white shadow-sm font-bold'
-                          : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-950 font-medium'
+                          ? 'bg-red-600 text-white shadow-xs font-bold'
+                          : 'text-slate-700 hover:bg-slate-100/90 hover:text-slate-950 font-medium'
                       }`}
                       id="sidebar-tab-kelola-data"
                     >
                       <div className={`p-2 rounded-lg shrink-0 transition-colors ${
-                        activeTab === 'kelola-data' ? 'bg-red-700/60 text-white' : 'bg-white text-slate-600 shadow-2xs group-hover:text-red-600'
+                        activeTab === 'kelola-data' ? 'bg-red-700/60 text-white' : 'bg-slate-100 text-slate-600 shadow-2xs group-hover:text-red-600 group-hover:bg-red-50'
                       }`}>
                         <Database className="w-4 h-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center space-x-1.5">
-                          <span className="text-xs font-bold truncate">Kelola Data</span>
-                          <span className="px-1.5 py-0.2 bg-amber-400 text-slate-900 text-[8px] font-black uppercase rounded tracking-wider shadow-xs">
+                        <div className="flex items-center space-x-1.5 min-w-0">
+                          <span className="text-xs font-bold truncate leading-tight">Kelola Data</span>
+                          <span className="px-1.5 py-0.5 bg-amber-400 text-slate-900 text-[8px] font-black uppercase rounded tracking-wider shrink-0 shadow-2xs">
                             OWNER
                           </span>
                         </div>
-                        <div className={`text-[10px] truncate ${activeTab === 'kelola-data' ? 'text-red-100' : 'text-slate-400'}`}>
+                        <div className={`text-[10px] leading-tight truncate mt-0.5 ${activeTab === 'kelola-data' ? 'text-red-100' : 'text-slate-400'}`}>
                           Link Spreadsheet & Sinkronisasi
                         </div>
                       </div>
@@ -1231,10 +1255,10 @@ export default function App() {
                     <button
                       type="button"
                       onClick={(e) => toggleMenuExpand('kelola-data', e)}
-                      className={`p-2 rounded-lg ml-1 shrink-0 transition-all cursor-pointer ${
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 transition-all cursor-pointer ${
                         activeTab === 'kelola-data'
-                          ? 'bg-red-700/40 hover:bg-red-700 text-white'
-                          : 'bg-white hover:bg-slate-200/80 text-slate-500 hover:text-slate-800 border border-slate-200/60 shadow-2xs'
+                          ? 'bg-red-700/40 hover:bg-red-700 text-white border border-red-500/40'
+                          : 'bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 border border-slate-300 shadow-2xs'
                       }`}
                       title={expandedMenus['kelola-data'] ? 'Sembunyikan Sub Halaman (-)' : 'Tampilkan Sub Halaman (+)'}
                     >
@@ -1248,7 +1272,7 @@ export default function App() {
 
                   {/* Sub-menu Kelola Data (default sembunyi, muncul saat user pencet plus atau pilih menu) */}
                   {expandedMenus['kelola-data'] && (
-                    <div className="px-2 py-1.5 space-y-1 bg-white/70 border-t border-slate-100">
+                    <div className="px-2 py-1.5 space-y-1 bg-slate-50/70 border-t border-slate-100">
                       <button
                         onClick={() => {
                           handleNavigateTab('kelola-data');
@@ -1257,12 +1281,12 @@ export default function App() {
                         }}
                         className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                           activeTab === 'kelola-data' && kelolaDataSubTab === 'sheets'
-                            ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                            ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                            : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                         }`}
                       >
                         <FileSpreadsheet className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'kelola-data' && kelolaDataSubTab === 'sheets' ? 'text-red-600' : 'text-slate-400'}`} />
-                        <span className="truncate text-[11px]">Daftar Link Spreadsheet</span>
+                        <span className="truncate text-[11px] leading-tight">Daftar Link Spreadsheet</span>
                       </button>
                       <button
                         onClick={() => {
@@ -1272,12 +1296,12 @@ export default function App() {
                         }}
                         className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                           activeTab === 'kelola-data' && kelolaDataSubTab === 'indicators'
-                            ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                            ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                            : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                         }`}
                       >
                         <Table className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'kelola-data' && kelolaDataSubTab === 'indicators' ? 'text-red-600' : 'text-slate-400'}`} />
-                        <span className="truncate text-[11px]">Kamus Data & Indikator</span>
+                        <span className="truncate text-[11px] leading-tight">Kamus Data & Indikator</span>
                       </button>
                       <button
                         onClick={() => {
@@ -1287,12 +1311,12 @@ export default function App() {
                         }}
                         className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-left text-xs transition-all cursor-pointer ${
                           activeTab === 'kelola-data' && kelolaDataSubTab === 'users'
-                            ? 'bg-red-50 text-red-700 font-bold border border-red-200/60'
-                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-medium'
+                            ? 'bg-red-50 text-red-700 font-bold border border-red-200/60 shadow-2xs'
+                            : 'text-slate-600 hover:bg-white hover:text-slate-900 font-medium border border-transparent'
                         }`}
                       >
                         <ShieldCheck className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'kelola-data' && kelolaDataSubTab === 'users' ? 'text-red-600' : 'text-slate-400'}`} />
-                        <span className="truncate text-[11px]">Referensi Hak Akses User</span>
+                        <span className="truncate text-[11px] leading-tight">Referensi Hak Akses User</span>
                       </button>
                     </div>
                   )}
@@ -1302,10 +1326,10 @@ export default function App() {
           )}
 
           {/* Sidebar Quick Footer Info */}
-          <div className="p-3 border-t border-slate-100 bg-slate-50/50 mt-auto text-[11px] text-slate-500">
+          <div className="p-3 border-t border-slate-300/80 bg-slate-200/70 mt-auto text-[11px] text-slate-600">
             {isSidebarOpen ? (
               <div className="flex items-center justify-between font-mono text-[10px]">
-                <span className="text-slate-400">Telkom Akses</span>
+                <span className="text-slate-500 font-semibold">Telkom Akses</span>
                 <span className="text-emerald-600 font-bold flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
                   NOC Live
@@ -1335,7 +1359,9 @@ export default function App() {
                     : '💼 Performansi Bisnis - Detail Portofolio & Program'
                 )}
                 {activeTab === 'assurance' && (
-                  assuranceSubTab === 'ticket_perf'
+                  assuranceSubTab === 'kpi_imbal_jasa'
+                    ? '🏆 Performansi Assurance - KPI Assurance'
+                    : assuranceSubTab === 'ticket_perf'
                     ? '🛠️ Ringkasan & Agregasi Tiket'
                     : assuranceSubTab === 'operations'
                     ? '🛠️ Evaluasi Solusi Tiket'
@@ -1343,7 +1369,7 @@ export default function App() {
                     ? '📋 Detail Transaksi & Log Tiket'
                     : assuranceSubTab === 'kpi_ioan'
                     ? '🏆 Performansi Assurance - KPI IOAN'
-                    : '🏆 Performansi Assurance - KPI ASSURANCE'
+                    : '🏆 Performansi Assurance - KPI Assurance'
                 )}
                 {activeTab === 'provisioning' && '📦 Performansi Provisioning'}
                 {activeTab === 'qe' && '🛡️ Evaluasi QE Service Area'}

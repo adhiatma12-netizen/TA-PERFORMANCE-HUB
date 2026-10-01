@@ -6,7 +6,7 @@ import TicketLogDashboard from './TicketLogDashboard';
 import KpiImbalJasaDashboard from './KpiImbalJasaDashboard';
 import KpiIoanDashboard from './KpiIoanDashboard';
 
-export type AssuranceSubTab = 'ticket_perf' | 'operations' | 'ticket_logs' | 'kpi_imbal_jasa' | 'kpi_ioan';
+export type AssuranceSubTab = 'kpi_imbal_jasa' | 'ticket_perf' | 'operations' | 'ticket_logs' | 'kpi_ioan';
 
 interface AssuranceDashboardProps {
   data: RegionalPerformanceData;
@@ -20,13 +20,18 @@ export default function AssuranceDashboard({
   data: _data, 
   allRegionsData: _allRegionsData, 
   activeRegional: _activeRegional,
-  activeSubTab = 'ticket_perf',
+  activeSubTab = 'kpi_imbal_jasa',
+  setActiveSubTab: _setActiveSubTab,
 }: AssuranceDashboardProps) {
   const assuranceTab = activeSubTab;
 
   return (
     <div className="space-y-6" id="assurance-dashboard">
       {/* RENDER ASSURANCE SUB-PAGES */}
+      {assuranceTab === 'kpi_imbal_jasa' && (
+        <KpiImbalJasaDashboard />
+      )}
+
       {assuranceTab === 'ticket_perf' && (
         <TicketPerformanceDashboard />
       )}
@@ -37,10 +42,6 @@ export default function AssuranceDashboard({
 
       {assuranceTab === 'ticket_logs' && (
         <TicketLogDashboard />
-      )}
-
-      {assuranceTab === 'kpi_imbal_jasa' && (
-        <KpiImbalJasaDashboard />
       )}
 
       {assuranceTab === 'kpi_ioan' && (

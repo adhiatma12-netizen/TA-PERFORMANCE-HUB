@@ -87,7 +87,6 @@ export default function BusinessDashboard({
 
   // Filter states
   const [selectedBulan, setSelectedBulan] = useState<string>('Semua Bulan'); // Kolom A filter
-  const [selectedPortfolio, setSelectedPortfolio] = useState<string>('All'); // Kolom Q filter
   const [searchQuery, setSearchQuery] = useState<string>(''); // Search by Nama Program (Kolom R)
 
   // Chart view states for high-end professional visualization
@@ -135,7 +134,6 @@ export default function BusinessDashboard({
       filterContext: {
         Regional: activeRegional,
         Bulan: selectedBulan,
-        Portofolio: selectedPortfolio,
         Tahun: activeYear,
         ...customFilters,
       },
@@ -169,15 +167,9 @@ export default function BusinessDashboard({
     return calculateBCStats(allRecords, selectedBulan);
   }, [allRecords, selectedBulan]);
 
-  // Filter portfolios and programs based on selectedPortfolio and searchQuery
+  // Filter programs based on searchQuery
   const filteredPortfolios = useMemo(() => {
     return stats.portfolios
-      .filter((p) => {
-        if (selectedPortfolio !== 'All' && p.portofolio !== selectedPortfolio) {
-          return false;
-        }
-        return true;
-      })
       .map((p) => {
         const matchingPrograms = p.programs.filter((prg) => {
           if (!searchQuery.trim()) return true;
@@ -193,7 +185,7 @@ export default function BusinessDashboard({
         };
       })
       .filter((p) => p.programs.length > 0 || !searchQuery.trim());
-  }, [stats.portfolios, selectedPortfolio, searchQuery]);
+  }, [stats.portfolios, searchQuery]);
 
   // Flattened programs list for master view
   const masterProgramList = useMemo(() => {
@@ -226,7 +218,6 @@ export default function BusinessDashboard({
     const monthMap: Record<string, { bulan: string; Revenue: number; COGS: number; Profit: number }> = {};
 
     allRecords.forEach((r) => {
-      if (selectedPortfolio !== 'All' && r.portofolio !== selectedPortfolio) return;
       const bln = r.bulan || 'Lain-lain';
       if (!monthMap[bln]) {
         monthMap[bln] = { bulan: bln, Revenue: 0, COGS: 0, Profit: 0 };
@@ -245,7 +236,7 @@ export default function BusinessDashboard({
       if (idxA !== -1 && idxB !== -1) return idxA - idxB;
       return a.bulan.localeCompare(b.bulan);
     });
-  }, [allRecords, selectedPortfolio]);
+  }, [allRecords]);
 
   // Sorted monthly data for the monthly trend matrix table
   const sortedMonthlyTable = useMemo(() => {
@@ -378,38 +369,13 @@ export default function BusinessDashboard({
               </div>
             </div>
 
-            {/* Portofolio Selector */}
-            <div className="w-full sm:w-56">
-              <label htmlFor="select-portofolio" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5 mb-1.5">
-                <Briefcase className="w-3.5 h-3.5 text-blue-500" />
-                <span>Portofolio</span>
-              </label>
-              <div className="relative">
-                <select
-                  id="select-portofolio"
-                  value={selectedPortfolio}
-                  onChange={(e) => setSelectedPortfolio(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl px-3.5 py-2.5 appearance-none focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 cursor-pointer pr-9 shadow-sm hover:bg-slate-100/80 transition-colors"
-                >
-                  <option value="All">Semua Portofolio</option>
-                  {stats.portfolios.map((p) => (
-                    <option key={p.portofolio} value={p.portofolio}>
-                      {p.portofolio}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-3 pointer-events-none" />
-              </div>
-            </div>
-
             {/* Quick Reset Filter Indicator */}
-            {(selectedBulan !== 'Semua Bulan' || selectedPortfolio !== 'All' || searchQuery) && (
+            {(selectedBulan !== 'Semua Bulan' || searchQuery) && (
               <div className="self-end pb-0.5">
                 <button
                   id="btn-reset-bc-filters"
                   onClick={() => {
                     setSelectedBulan('Semua Bulan');
-                    setSelectedPortfolio('All');
                     setSearchQuery('');
                   }}
                   className="px-3 py-2 text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all flex items-center space-x-1 cursor-pointer"
@@ -746,7 +712,7 @@ export default function BusinessDashboard({
                     <td className="py-4 px-4 text-center">
                       <button
                         onClick={() => {
-                          setSelectedPortfolio(p.portofolio);
+                          setExpandedPortfolios((prev) => ({ ...prev, [p.portofolio]: true }));
                           setActiveSubTab?.('portfolio');
                         }}
                         className="inline-flex items-center space-x-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold rounded-lg transition-colors cursor-pointer"
@@ -1211,7 +1177,7 @@ export default function BusinessDashboard({
                     Margin: `${m.margin.toFixed(1)}%`,
                     GrowthMoM: m.revGrowth !== null ? `${m.revGrowth.toFixed(1)}%` : '-',
                   })),
-                  { Portofolio: selectedPortfolio },
+                  {},
                   'Analisis pergerakan trend pendapatan dan biaya bulanan Telkom Akses. Identifikasi bulan dengan lonjakan revenue atau pembengkakan biaya.'
                 )
               }
@@ -1510,7 +1476,7 @@ export default function BusinessDashboard({
           <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/80 text-slate-400 space-y-2">
             <AlertCircle className="w-8 h-8 text-slate-300 mx-auto" />
             <p className="font-bold text-slate-600">Tidak ada data ditemukan</p>
-            <p className="text-xs">Silakan sesuaikan filter bulan, portofolio, atau kata kunci pencarian Anda.</p>
+            <p className="text-xs">Silakan sesuaikan filter bulan atau kata kunci pencarian Anda.</p>
           </div>
         )}
       </div>

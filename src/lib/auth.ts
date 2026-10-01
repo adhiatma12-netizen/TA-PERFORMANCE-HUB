@@ -144,7 +144,7 @@ export interface LdapAuthResult {
 }
 
 /**
- * Melakukan verifikasi autentikasi LDAP / SSO terhadap target (http://madiunjuara.com/)
+ * Melakukan verifikasi autentikasi LDAP / SSO terhadap target server portal SSO
  * Binary check: Hanya membaca status sukses atau gagal, tanpa menyimpan kredensial.
  */
 export async function verifyLdapLogin(userInput: string, passInput: string): Promise<LdapAuthResult> {

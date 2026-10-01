@@ -86,7 +86,7 @@ KEMBALIKAN HANYA JSON VALID DENGAN SKEMA PERSIS BERIKUT (tanpa markdown backtick
 `.trim();
 
   try {
-    const candidateModels = ['gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+    const candidateModels = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];
     let textResult = '';
 
     for (const model of candidateModels) {

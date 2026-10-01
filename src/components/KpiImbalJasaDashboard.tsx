@@ -27,6 +27,7 @@ import {
   MapPin,
   Check,
   BarChart3,
+  Coins,
 } from 'lucide-react';
 import { MonthKpiDataset, KpiSectorRow, KpiIndicatorSummaryRow } from '../types/kpiImbalJasa';
 import {
@@ -284,7 +285,7 @@ export default function KpiImbalJasaDashboard() {
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-700 border border-red-200">
                 <Award className="w-3.5 h-3.5" />
-                KPI ASSURANCE
+                KPI Assurance
               </span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
@@ -302,26 +303,21 @@ export default function KpiImbalJasaDashboard() {
           {/* Right Controls: Filter Bulan Dropdown & Action Buttons */}
           <div className="flex flex-wrap items-center gap-2.5">
             {/* BULAN FILTER DROPDOWN */}
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 shadow-2xs">
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 shadow-2xs">
               <Calendar className="w-4 h-4 text-red-600 shrink-0" />
-              <div className="flex flex-col">
-                <label htmlFor="select-bulan" className="text-[10px] font-bold uppercase text-slate-500 tracking-wider">
-                  Filter Bulan:
-                </label>
-                <select
-                  id="select-bulan"
-                  aria-label="Filter Bulan KPI Imbal Jasa"
-                  value={selectedBulan}
-                  onChange={(e) => setSelectedBulan(e.target.value as KpiMonth)}
-                  className="bg-transparent text-sm font-extrabold text-slate-900 focus:outline-hidden cursor-pointer"
-                >
-                  {MONTH_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label} ({opt.range})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <select
+                id="select-bulan"
+                aria-label="Filter Bulan KPI Imbal Jasa"
+                value={selectedBulan}
+                onChange={(e) => setSelectedBulan(e.target.value as KpiMonth)}
+                className="bg-transparent text-sm font-extrabold text-slate-900 focus:outline-hidden cursor-pointer"
+              >
+                {MONTH_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Refresh Button */}
@@ -369,7 +365,32 @@ export default function KpiImbalJasaDashboard() {
       </div>
 
       {/* 2. EXECUTIVE SUMMARY STAT CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-summary-cards">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4" id="kpi-summary-cards">
+        {/* Card 0: Estimasi Revenue (Di sebelah kiri menu Performansi Branch) */}
+        <div className="bg-white border border-emerald-200/90 rounded-2xl p-4 shadow-xs flex flex-col justify-between relative overflow-hidden bg-gradient-to-b from-emerald-50/40 via-white to-white">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Estimasi Revenue</span>
+            <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200">
+              <Coins className="w-4 h-4" />
+            </span>
+          </div>
+          <div className="mt-3">
+            <div className="text-2xl font-black text-emerald-950 tracking-tight">
+              {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(
+                Math.round((dataset.summary.perfBranch / 100) * 233327246)
+              )}
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-xs text-emerald-700 font-semibold">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span>{dataset.summary.perfBranch.toFixed(2)}% &times; Rp 233.327.246</span>
+            </div>
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between">
+            <span>Plafon Target:</span>
+            <span className="font-bold text-slate-700">Rp 233.327.246</span>
+          </div>
+        </div>
+
         {/* Card 1: Nilai Performansi Branch */}
         <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
@@ -393,28 +414,7 @@ export default function KpiImbalJasaDashboard() {
           </div>
         </div>
 
-        {/* Card 2: Status Hak Imbal Jasa */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Hak Imbal Jasa</span>
-            <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
-              <Award className="w-4 h-4" />
-            </span>
-          </div>
-          <div className="mt-3">
-            <div className="text-2xl font-black text-blue-950 tracking-tight">100% LUNAS</div>
-            <div className="mt-1 flex items-center gap-1.5 text-xs text-blue-700 font-semibold">
-              <Check className="w-3.5 h-3.5" />
-              <span>{dataset.summary.statusHakImbalJasa}</span>
-            </div>
-          </div>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 flex justify-between">
-            <span>Pencairan:</span>
-            <span className="font-bold text-emerald-600">100% (Pinalti 0%)</span>
-          </div>
-        </div>
-
-        {/* Card 3: Total Bobot & Indikator */}
+        {/* Card 2: Total Bobot & Indikator */}
         <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Indikator</span>
@@ -437,7 +437,7 @@ export default function KpiImbalJasaDashboard() {
           </div>
         </div>
 
-        {/* Card 4: Top Sektor & Cakupan Area */}
+        {/* Card 3: Top Sektor & Cakupan Area */}
         <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sektor Terbaik (Rank 1)</span>

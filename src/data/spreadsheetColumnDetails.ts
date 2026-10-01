@@ -175,14 +175,14 @@ export const SPREADSHEET_SOURCES: SpreadsheetSourceItem[] = [
       },
       {
         column: 'SSO / LDAP',
-        fieldName: 'INTEGRASI SSO (madiunjuara.com)',
+        fieldName: 'INTEGRASI SSO ENTERPRISE',
         note: 'Verifikasi binary kredensial SSO kantor & sinkronisasi hak akses OWNER via Kolom A & C',
         targetPage: 'Halaman Login (Tab SSO) & Halaman Kelola Data',
         targetComponent: 'Tab Login SSO / LDAP, Proxy /api/auth/ldap & Evaluasi Role Previlage',
-        rawDataType: 'Form POST (i_userid, i_password) ke http://madiunjuara.com/',
+        rawDataType: 'Form POST (i_userid, i_password) ke server SSO',
         cleanedDataType: 'JSON { success: boolean, user: string, role: "OWNER" | "USER" }',
         formula: 'verifySso(user, pass) -> IF match(sheet.user) THEN sheet.previlage ELSE "USER"',
-        transformationLogic: 'Menerima User ID dan password dari form login SSO, memvalidasi ke server http://madiunjuara.com/ via proxy backend tanpa menyimpan password (zero-credential storage). Jika valid, sistem mencocokkan User ID dengan Kolom A sheet "list user". Jika terdaftar dengan Kolom C = "OWNER", pengguna otomatis diberi hak akses OWNER.',
+        transformationLogic: 'Menerima User ID dan password dari form login SSO, memvalidasi ke server SSO via proxy backend tanpa menyimpan password (zero-credential storage). Jika valid, sistem mencocokkan User ID dengan Kolom A sheet "list user". Jika terdaftar dengan Kolom C = "OWNER", pengguna otomatis diberi hak akses OWNER.',
         steps: [
           {
             step: 1,
@@ -192,7 +192,7 @@ export const SPREADSHEET_SOURCES: SpreadsheetSourceItem[] = [
           },
           {
             step: 2,
-            title: '2. Binary Check ke http://madiunjuara.com/',
+            title: '2. Binary Check ke Server SSO',
             description: 'Backend mengirim payload form URL-encoded (i_userid & i_password) ke portal SSO, mendeteksi status 302 redirect atau respons error "salah memasukan Password".',
             codeSnippet: 'const res = await verifySsoCredentials(username, password);'
           },
@@ -211,7 +211,7 @@ export const SPREADSHEET_SOURCES: SpreadsheetSourceItem[] = [
         ],
         sampleRaw: 'User: "25890026", Pass: "******"',
         sampleOutput: 'Status SSO: Terverifikasi, Previlage: OWNER (Akses Kelola Data Terbuka)',
-        evaluationGuide: 'Jika pegawai login via SSO dan memerlukan akses Kelola Data, cukup masukkan User ID SSO pegawai tersebut ke Kolom A sheet "list user" dan isi Kolom C dengan "OWNER". Password di sheet boleh dibiarkan kosong karena password diverifikasi langsung oleh portal SSO madiunjuara.com.'
+        evaluationGuide: 'Jika pegawai login via SSO dan memerlukan akses Kelola Data, cukup masukkan User ID SSO pegawai tersebut ke Kolom A sheet "list user" dan isi Kolom C dengan "OWNER". Password di sheet boleh dibiarkan kosong karena password diverifikasi langsung oleh portal SSO.'
       }
     ]
   },

@@ -504,3 +504,102 @@ export const fetchAllroundMadiunSheetData = async (): Promise<AllroundSheetRow[]
   }
 };
 
+export interface PbsRecord {
+  nik: string;
+  nama: string;
+  juni: string;
+  juli: string;
+  agustus: string;
+}
+
+export const fallbackPbsData: PbsRecord[] = [
+  { nik: "25930166", nama: "AGUS BUDIANTO", juni: "80,27", juli: "81.30", agustus: "85.85" },
+  { nik: "20931240", nama: "AGUS PRASETYO", juni: "110,64", juli: "84.76", agustus: "88.74" },
+  { nik: "17760361", nama: "AGUS PRASTYONO", juni: "77,94", juli: "77.86", agustus: "67.47" },
+  { nik: "16014132", nama: "ALVINNADADZIR FADLI ALMOESTAR", juni: "", juli: "123.96", agustus: "82.32" },
+  { nik: "22970155", nama: "ANGGA ADI SUMARSONO", juni: "91,64", juli: "96.26", agustus: "103.50" },
+  { nik: "18810005", nama: "ARIF BUDIANTO", juni: "0", juli: "0", agustus: "0" },
+  { nik: "19820025", nama: "BAMBANG ISWAHYUDI", juni: "64.23", juli: "75.77", agustus: "79.33" },
+  { nik: "22040021", nama: "CATUR DWI CAHYANA", juni: "75.22", juli: "98.33", agustus: "89.61" },
+  { nik: "16730268", nama: "DINDIN", juni: "56.01", juli: "56.14", agustus: "87.81" },
+  { nik: "25980261", nama: "EKO YOGA PRASETYO", juni: "80.55", juli: "86.11", agustus: "80.56" },
+  { nik: "18930264", nama: "ERFAN SURYADIANTO", juni: "76.63", juli: "72.35", agustus: "76.69" },
+  { nik: "20951236", nama: "FERY DWI PRABOWO", juni: "64.78", juli: "73.32", agustus: "70.18" },
+  { nik: "22920009", nama: "GATOT WAHYU TRI MARIADI", juni: "65.45", juli: "83.64", agustus: "79.35" },
+  { nik: "18940430", nama: "IRFAN TRISNAWAN", juni: "76.16", juli: "80.65", agustus: "81.45" },
+  { nik: "22950007", nama: "JOKO SUSILO", juni: "128.73", juli: "127.30", agustus: "107.76" },
+  { nik: "18940674", nama: "M.NURKHOLIS", juni: "67.51", juli: "73.88", agustus: "72.69" },
+  { nik: "20921093", nama: "OCKY DHEMYAWAN", juni: "63.94", juli: "80.57", agustus: "68.76" },
+  { nik: "21000033", nama: "RENGGA REVI PRASTYO", juni: "70.39", juli: "69.22", agustus: "77.81" },
+  { nik: "22020110", nama: "RIZKY DWI ARFIYANTO", juni: "98.15", juli: "86.83", agustus: "89.30" },
+  { nik: "20961494", nama: "ROHMAD QOMARUDIN", juni: "69.70", juli: "82.58", agustus: "61.54" },
+  { nik: "19930277", nama: "RYAN HENDRA SAPUTRO", juni: "0", juli: "0", agustus: "0" },
+  { nik: "25000294", nama: "SYAHRUL WAHYU KUSUMANTORO", juni: "70.55", juli: "77.94", agustus: "89.05" },
+  { nik: "22970041", nama: "SYAIFUDIN HASARI", juni: "75.20", juli: "85.08", agustus: "79.86" },
+  { nik: "18940606", nama: "THEOFILUS DHARMAWAN E.S", juni: "68.11", juli: "73.11", agustus: "68.70" },
+  { nik: "19950260", nama: "TRI KUSDIANTO", juni: "69.66", juli: "80.29", agustus: "82.92" },
+  { nik: "20880121", nama: "UUN SETYAWAN", juni: "81.20", juli: "90.78", agustus: "97.14" },
+  { nik: "16720253", nama: "YOHANES BUDI PRAYOGO", juni: "96.58", juli: "104.61", agustus: "101.66" },
+  { nik: "19970232", nama: "YULIAN YUSUF YOGA WIDIARNA", juni: "70.11", juli: "68.00", agustus: "74.50" },
+  { nik: "22000104", nama: "ZAENAL MAS UD", juni: "84.07", juli: "86.99", agustus: "93.87" }
+];
+
+export const fetchPbsSheetData = async (): Promise<PbsRecord[]> => {
+  const spreadsheetId = '1weBRqT10YFQEg09OuwswJWsHiQWbDnCJl4Ff6OpR_JE';
+  const sheetName = 'PBS';
+  const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const csvText = await response.text();
+    const rows = parseCSV(csvText);
+    if (!rows || rows.length < 2) {
+      return fallbackPbsData;
+    }
+
+    // Determine column indices from header
+    const headerRow = rows[0].map(h => (h || '').trim().toUpperCase());
+    let nikIdx = headerRow.findIndex(h => h === 'NIK' || h.includes('NIK'));
+    let namaIdx = headerRow.findIndex(h => h === 'NAMA' || h.includes('NAMA'));
+    let juniIdx = headerRow.findIndex(h => h === 'JUNI' || h.includes('JUNI'));
+    let juliIdx = headerRow.findIndex(h => h === 'JULI' || h.includes('JULI'));
+    let agustusIdx = headerRow.findIndex(h => h === 'AGUSTUS' || h.includes('AGUSTUS'));
+
+    // Fallbacks as per specifications:
+    // Kolom B = index 1 (NIK)
+    // Kolom C = index 2 (NAMA)
+    // Kolom D = index 3 (JUNI)
+    // Kolom E = index 4 (JULI)
+    // Kolom F = index 5 (AGUSTUS)
+    if (nikIdx === -1) nikIdx = 1;
+    if (namaIdx === -1) namaIdx = 2;
+    if (juniIdx === -1) juniIdx = 3;
+    if (juliIdx === -1) juliIdx = 4;
+    if (agustusIdx === -1) agustusIdx = 5;
+
+    const records: PbsRecord[] = [];
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row.length === 0) continue;
+      const nik = (row[nikIdx] || '').trim();
+      const nama = (row[namaIdx] || '').trim();
+      const juni = (row[juniIdx] || '').trim();
+      const juli = (row[juliIdx] || '').trim();
+      const agustus = (row[agustusIdx] || '').trim();
+
+      if (!nik && !nama) continue;
+
+      records.push({ nik, nama, juni, juli, agustus });
+    }
+
+    return records.length > 0 ? records : fallbackPbsData;
+  } catch (err: any) {
+    console.warn("Gagal mengambil data PBS dari Google Sheets, menggunakan data fallback:", err);
+    return fallbackPbsData;
+  }
+};
+
+

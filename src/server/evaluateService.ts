@@ -64,34 +64,43 @@ export async function generateGeminiEvaluation(
   userPrompt: string,
   systemInstruction: string
 ): Promise<{ text: string; modelUsed: string }> {
-  const candidateModels = ['gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
+  // Primary recommended model is gemini-3.8-flash, fallback to gemini-3.1-flash-lite (avoid deprecated/overloaded gemini-flash-latest)
+  const candidateModels = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];
   let lastError: any = null;
 
   for (const model of candidateModels) {
-    try {
-      const response = await withTimeout(
-        ai.models.generateContent({
-          model,
-          contents: userPrompt,
-          config: {
-            systemInstruction,
-            temperature: 0.7,
-          },
-        }),
-        14000,
-        `Request to ${model} timed out after 14s`
-      );
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const response = await withTimeout(
+          ai.models.generateContent({
+            model,
+            contents: userPrompt,
+            config: {
+              systemInstruction,
+              temperature: 0.7,
+            },
+          }),
+          14000,
+          `Request to ${model} timed out after 14s`
+        );
 
-      const text = response.text || '';
-      if (text && text.trim().length > 0) {
-        return { text, modelUsed: model };
+        const text = response.text || '';
+        if (text && text.trim().length > 0) {
+          return { text, modelUsed: model };
+        }
+      } catch (err: any) {
+        lastError = err;
+        const errMsg = err?.message || String(err);
+        const is503OrRateLimit = errMsg.includes('503') || errMsg.includes('high demand') || errMsg.includes('429');
+        if (is503OrRateLimit && attempt === 1) {
+          await new Promise((resolve) => setTimeout(resolve, 600));
+          continue;
+        }
+        console.warn(`[Gemini API] Candidate ${model} unavailable (${errMsg.slice(0, 80)}). Trying fallback candidate...`);
+        break;
       }
-    } catch (err: any) {
-      lastError = err;
-      const errMsg = err?.message || String(err);
-      console.warn(`[Gemini API] Candidate ${model} unavailable (${errMsg.slice(0, 80)}). Trying fallback candidate...`);
-      await new Promise((resolve) => setTimeout(resolve, 400));
     }
+    await new Promise((resolve) => setTimeout(resolve, 300));
   }
 
   throw lastError || new Error('All candidate Gemini models temporarily unavailable');

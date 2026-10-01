@@ -9,7 +9,6 @@ import {
   AlertTriangle,
   ArrowUpRight,
   ArrowDownRight,
-  Filter,
   Sparkles,
   Layers,
   FileSpreadsheet,
@@ -19,6 +18,7 @@ import {
   Calendar,
   ChevronRight,
   Check,
+  Coins,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -56,7 +56,7 @@ interface KpiImbalJasaAnalyticsProps {
   onOpenRawImageModal?: () => void;
 }
 
-type AnalyticsViewMode = 'all_branch' | 'service_area' | 'sektor' | 'indicators';
+type AnalyticsViewMode = 'all_branch' | 'service_area' | 'indicators';
 
 const SERVICE_AREA_COLORS: Record<string, { stroke: string; fill: string }> = {
   TRENGGALEK: { stroke: '#059669', fill: '#059669' }, // Emerald
@@ -75,23 +75,12 @@ export default function KpiImbalJasaAnalytics({
   onOpenRawImageModal,
 }: KpiImbalJasaAnalyticsProps) {
   const [viewMode, setViewMode] = useState<AnalyticsViewMode>('all_branch');
-  const [selectedAreaFilter, setSelectedAreaFilter] = useState<string>('ALL');
   const [metricFocus, setMetricFocus] = useState<'perf' | 'asgar' | 'serviceAvailability' | 'ttr24hNonHvc' | 'closedSqm'>('perf');
 
   const [trendScaleMode, setTrendScaleMode] = useState<'achievement' | 'zoom' | 'standard'>('achievement');
-  const [indicatorTrendFilter, setIndicatorTrendFilter] = useState<'ALL' | 'TTR' | 'SLA_AVAIL' | 'FIELD' | 'SQM_TOOLS'>('ALL');
-  const [selectedIndicatorFilter, setSelectedIndicatorFilter] = useState<number | 'ALL'>('ALL');
   const [selectedServiceAreaFilter, setSelectedServiceAreaFilter] = useState<string>('ALL');
-  const [indicatorValueMetric, setIndicatorValueMetric] = useState<'pencapaian' | 'realisasi'>('pencapaian');
+  const [selectedKomboSector, setSelectedKomboSector] = useState<string>('ALL');
   const [radarServiceAreaFilter, setRadarServiceAreaFilter] = useState<string>('ALL');
-
-  // Sector comparison selection
-  const [compareSectorA, setCompareSectorA] = useState<string>(
-    currentDataset.sectorRows[0]?.sektor || 'TRENGGALEK'
-  );
-  const [compareSectorB, setCompareSectorB] = useState<string>(
-    currentDataset.sectorRows[currentDataset.sectorRows.length - 1]?.sektor || 'PONOROGO 1'
-  );
 
   // 1. ALL BRANCH & SERVICE AREA HISTORICAL TREND DATA (Mei, Juni, Juli, Agustus, September)
   const historicalTrendData = useMemo(() => {
@@ -106,10 +95,71 @@ export default function KpiImbalJasaAnalytics({
     const calculated = months.map((m) => {
       const data = KPI_DATASETS[m];
 
+      // 1. If a specific sector is filtered in Grafik Kombo, compute for that sector
+      if (selectedKomboSector !== 'ALL') {
+        const sectorRow = data.sectorRows.find((s) => s.sektor === selectedKomboSector);
+        const perf = sectorRow ? sectorRow.perf : 0;
+        const asgar = sectorRow ? sectorRow.asgar : 0;
+        const availability = sectorRow ? sectorRow.serviceAvailability : 0;
+        const ttr24 = sectorRow ? sectorRow.ttr24hNonHvc : 0;
+        const closedSqm = sectorRow ? sectorRow.closedSqm : 0;
+        const valinsDc = sectorRow ? sectorRow.valinsDc : 0;
+        const valinsVisit = sectorRow ? sectorRow.valinsVisit : 0;
+        const outstandingSaldo = sectorRow ? sectorRow.outstandingSaldo : 0;
+
+        let totalWeightedSkor = 0;
+        let sumAchv = 0;
+        if (sectorRow) {
+          KPI_INDICATOR_SPECS.forEach((spec) => {
+            const codeKey = spec.code as keyof KpiSectorRow;
+            const real = typeof sectorRow[codeKey] === 'number' ? (sectorRow[codeKey] as number) : 0;
+
+            let achv = 0;
+            if (spec.polaritas === 'MIN') {
+              achv = real <= 0 ? 100 : (spec.target / real) * 100;
+            } else {
+              achv = (real / spec.target) * 100;
+            }
+            sumAchv += achv;
+            const skor = achv >= 100 ? spec.bobot : (achv / 100) * spec.bobot;
+            totalWeightedSkor += skor;
+          });
+        }
+        // Target performansi adalah 100%.
+        // Logika: Jika performansi 100% terhadap target maka pencapaian KPI / total ach juga 100%.
+        // Jika pencapaian dari target atau kurang dari target maka disesuaikan proporsional terhadap target 100%.
+        const TARGET_PERFORMANSI = 100.0;
+        const pencapaianRataRata = Number(((perf / TARGET_PERFORMANSI) * 100).toFixed(2));
+        const totalSkor = Math.min(100, Math.max(0, totalWeightedSkor));
+
+        return {
+          bulanKey: m,
+          bulan: monthLabels[m],
+          perfBranch: Number(perf.toFixed(2)),
+          totalSkor: Number(totalSkor.toFixed(2)),
+          pencapaianRataRata: Number(pencapaianRataRata.toFixed(2)),
+          momPerf: 0,
+          momPencapaian: 0,
+          target: 95.0,
+          baseline: 100.0,
+          asgar: Number(asgar.toFixed(2)),
+          serviceAvailability: Number(availability.toFixed(2)),
+          ttr24hNonHvc: Number(ttr24.toFixed(2)),
+          closedSqm: Number(closedSqm.toFixed(2)),
+          valinsDc: Number(valinsDc.toFixed(2)),
+          valinsVisit: Number(valinsVisit.toFixed(2)),
+          outstandingSaldo,
+          sektorLolos: perf >= 95.0 ? 1 : 0,
+          totalSektor: 1,
+        };
+      }
+
       if (selectedServiceAreaFilter === 'ALL') {
         const perf = data.summary.perfBranch;
         const totalSkor = data.summary.totalSkor;
-        const pencapaianRataRata = data.summary.pencapaianRataRata;
+        // Target performansi adalah 100%. Logika: (perf / 100) * 100
+        const TARGET_PERFORMANSI = 100.0;
+        const pencapaianRataRata = Number(((perf / TARGET_PERFORMANSI) * 100).toFixed(2));
         const asgar = data.totalBranchRow.asgar;
         const availability = data.totalBranchRow.serviceAvailability;
         const ttr24 = data.totalBranchRow.ttr24hNonHvc;
@@ -176,7 +226,9 @@ export default function KpiImbalJasaAnalytics({
         totalWeightedSkor += skor;
       });
 
-      const pencapaianRataRata = sumAchv / (KPI_INDICATOR_SPECS.length || 1);
+      // Target performansi adalah 100%. Logika: (avgPerf / 100) * 100
+      const TARGET_PERFORMANSI = 100.0;
+      const pencapaianRataRata = Number(((avgPerf / TARGET_PERFORMANSI) * 100).toFixed(2));
       const totalSkor = Math.min(100, Math.max(0, totalWeightedSkor));
 
       return {
@@ -211,7 +263,7 @@ export default function KpiImbalJasaAnalytics({
     });
 
     return calculated;
-  }, [selectedServiceAreaFilter]);
+  }, [selectedServiceAreaFilter, selectedKomboSector]);
 
   // 1.1 ALL 17 INDICATORS MULTI-MONTH TREND COMPARISON (Mei, Juni, Juli, Agustus, September)
   // Supports filtering by Service Area or All Branch
@@ -318,17 +370,6 @@ export default function KpiImbalJasaAnalytics({
     });
   }, [selectedServiceAreaFilter]);
 
-  // Filtered indicator trend list based on KPI dropdown and/or category group
-  const filteredIndicatorTrends = useMemo(() => {
-    let list = multiMonthIndicatorTrends;
-    if (selectedIndicatorFilter !== 'ALL') {
-      list = list.filter((item) => item.no === selectedIndicatorFilter);
-    } else if (indicatorTrendFilter !== 'ALL') {
-      list = list.filter((item) => item.categoryGroup === indicatorTrendFilter);
-    }
-    return list;
-  }, [multiMonthIndicatorTrends, selectedIndicatorFilter, indicatorTrendFilter]);
-
   // 2. SERVICE AREA AGGREGATION
   const serviceAreaStats = useMemo(() => {
     const map = new Map<string, {
@@ -413,27 +454,10 @@ export default function KpiImbalJasaAnalytics({
     return Array.from(new Set(currentDataset.sectorRows.map((r) => r.serviceArea))).sort();
   }, [currentDataset]);
 
-  // 3. SECTOR RANKING AND DISTRIBUTION DATA
-  const sectorChartData = useMemo(() => {
-    let rows = [...currentDataset.sectorRows];
-    if (selectedAreaFilter !== 'ALL') {
-      rows = rows.filter((r) => r.serviceArea === selectedAreaFilter);
-    }
-    return rows.map((r) => ({
-      rank: r.rank,
-      sektor: r.sektor,
-      serviceArea: r.serviceArea,
-      displayName: `${r.sektor}`,
-      perf: Number(r.perf.toFixed(2)),
-      asgar: Number(r.asgar.toFixed(2)),
-      serviceAvailability: Number(r.serviceAvailability.toFixed(2)),
-      ttr24hNonHvc: Number(r.ttr24hNonHvc.toFixed(2)),
-      outstandingSaldo: r.outstandingSaldo,
-      closedSqm: Number(r.closedSqm.toFixed(2)),
-      valinsDc: Number(r.valinsDc.toFixed(2)),
-      target: 95.0,
-    }));
-  }, [currentDataset, selectedAreaFilter]);
+  // Unique sector names list for filter
+  const allSectorNames = useMemo(() => {
+    return Array.from(new Set(currentDataset.sectorRows.map((r) => r.sektor))).sort();
+  }, [currentDataset]);
 
   // 4. RADAR CHART DATA FOR SERVICE AREAS
   const radarAreaComparisonData = useMemo(() => {
@@ -485,26 +509,6 @@ export default function KpiImbalJasaAnalytics({
     ];
   }, [serviceAreaStats, currentDataset]);
 
-  // 5. SECTOR COMPARISON DRILLDOWN (Sector A vs Sector B)
-  const sectorComparisonData = useMemo(() => {
-    const sA = currentDataset.sectorRows.find((r) => r.sektor === compareSectorA);
-    const sB = currentDataset.sectorRows.find((r) => r.sektor === compareSectorB);
-    if (!sA || !sB) return [];
-
-    return [
-      { metric: 'Overall Perf', target: 95, [sA.sektor]: sA.perf, [sB.sektor]: sB.perf },
-      { metric: 'ASGAR', target: 91.71, [sA.sektor]: sA.asgar, [sB.sektor]: sB.asgar },
-      { metric: 'Availability', target: 98.52, [sA.sektor]: sA.serviceAvailability, [sB.sektor]: sB.serviceAvailability },
-      { metric: 'TTR 24H', target: 91.1, [sA.sektor]: sA.ttr24hNonHvc, [sB.sektor]: sB.ttr24hNonHvc },
-      { metric: 'TTR 3H Manja', target: 94.79, [sA.sektor]: sA.ttr3hManja, [sB.sektor]: sB.ttr3hManja },
-      { metric: 'TTR 12H Gold', target: 83.0, [sA.sektor]: sA.ttr12hGold, [sB.sektor]: sB.ttr12hGold },
-      { metric: 'Valins DC', target: 95.0, [sA.sektor]: sA.valinsDc, [sB.sektor]: sB.valinsDc },
-      { metric: 'Closed SQM', target: 70.0, [sA.sektor]: sA.closedSqm, [sB.sektor]: sB.closedSqm },
-      { metric: 'SCC Inet', target: 70.0, [sA.sektor]: sA.sccInet, [sB.sektor]: sB.sccInet },
-      { metric: 'TTR Comp 4H', target: 47.0, [sA.sektor]: sA.ttrCompSqm4h, [sB.sektor]: sB.ttrCompSqm4h },
-    ];
-  }, [currentDataset, compareSectorA, compareSectorB]);
-
   // 6. INDICATORS ACHIEVEMENT & GAP DATA
   const indicatorGapData = useMemo(() => {
     return currentDataset.indicatorBreakdown.map((ind) => {
@@ -540,10 +544,6 @@ export default function KpiImbalJasaAnalytics({
 
   const PIE_COLORS = ['#dc2626', '#2563eb', '#059669', '#d97706', '#7c3aed'];
 
-  // Top Area & Gap Area
-  const topArea = serviceAreaStats[0];
-  const lowestArea = serviceAreaStats[serviceAreaStats.length - 1];
-
   return (
     <div className="space-y-6" id="kpi-imbal-jasa-analytics">
       {/* TOP BAR: LENS SWITCHER & MONTH SELECTOR */}
@@ -569,22 +569,22 @@ export default function KpiImbalJasaAnalytics({
 
         {/* CONTROLS: VIEW MODE & MONTH DROPDOWN */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Month Selector Pills */}
-          <div className="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/80">
-            {MONTH_OPTIONS.map((m) => (
-              <button
-                key={m.value}
-                type="button"
-                onClick={() => onSelectBulan(m.value)}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
-                  selectedBulan === m.value
-                    ? 'bg-red-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                {m.label}
-              </button>
-            ))}
+          {/* Bulan Filter Dropdown */}
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 shadow-2xs">
+            <Calendar className="w-4 h-4 text-red-600 shrink-0" />
+            <select
+              id="analytics-select-bulan"
+              aria-label="Pilih Bulan KPI Imbal Jasa"
+              value={selectedBulan}
+              onChange={(e) => onSelectBulan(e.target.value as KpiMonth)}
+              className="bg-transparent text-xs font-extrabold text-slate-900 focus:outline-hidden cursor-pointer"
+            >
+              {MONTH_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Raw Sheet Image Modal Trigger (Optional Inspection) */}
@@ -603,7 +603,35 @@ export default function KpiImbalJasaAnalytics({
       </div>
 
       {/* EXECUTIVE SUMMARY KPI HIGHLIGHT CARDS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Card 0: ESTIMASI REVENUE (Di sebelah kiri menu PERFORMANSI BRANCH) */}
+        <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white rounded-2xl p-4 shadow-xs relative overflow-hidden">
+          <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none">
+            <Coins className="w-28 h-28" />
+          </div>
+          <div className="flex items-center justify-between text-emerald-100 text-xs font-semibold">
+            <span>ESTIMASI REVENUE</span>
+            <span className="bg-white/20 backdrop-blur-xs px-2 py-0.5 rounded text-[10px] font-mono font-bold">
+              {currentDataset.month}
+            </span>
+          </div>
+          <div className="mt-2">
+            <div className="text-2xl font-black tracking-tight text-white">
+              {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(
+                Math.round((currentDataset.summary.perfBranch / 100) * 233327246)
+              )}
+            </div>
+            <div className="text-xs text-emerald-200 font-semibold flex items-center gap-0.5 mt-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+              <span>{currentDataset.summary.perfBranch.toFixed(2)}% &times; Rp 233.327.246</span>
+            </div>
+          </div>
+          <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between text-2xs text-emerald-100">
+            <span>Plafon Target:</span>
+            <strong className="text-white">Rp 233.327.246</strong>
+          </div>
+        </div>
+
         {/* Card 1: Branch Performance Score */}
         <div className="bg-gradient-to-br from-red-600 via-red-700 to-rose-800 text-white rounded-2xl p-4 shadow-xs relative overflow-hidden">
           <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none">
@@ -622,72 +650,11 @@ export default function KpiImbalJasaAnalytics({
             </span>
           </div>
           <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between text-2xs text-red-100">
-            <span>Status Hak Imbal Jasa:</span>
-            <strong className="text-emerald-300">100% LUNAS</strong>
+            <span>Status Pencapaian:</span>
+            <strong className="text-emerald-300">Memenuhi Target</strong>
           </div>
         </div>
 
-        {/* Card 2: Sektor Lolos Target */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-semibold">
-            <span>PEMENUHAN SEKTOR</span>
-            <span className="p-1 rounded-md bg-emerald-50 text-emerald-700">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            </span>
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-slate-900 tracking-tight">
-              {currentDataset.summary.sektorMemenuhiTarget}
-            </span>
-            <span className="text-sm font-bold text-slate-400">/ {currentDataset.summary.totalSektor} Sektor</span>
-          </div>
-          <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-2xs">
-            <span className="text-slate-500">Rasio Lolos:</span>
-            <span className="font-bold text-emerald-600">
-              {((currentDataset.summary.sektorMemenuhiTarget / currentDataset.summary.totalSektor) * 100).toFixed(1)}% Memenuhi Target
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: Top Performing Service Area */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-semibold">
-            <span>AREA TERTINGGI (JUARA)</span>
-            <span className="p-1 rounded-md bg-blue-50 text-blue-700">
-              <MapPin className="w-3.5 h-3.5" />
-            </span>
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900 tracking-tight">{topArea?.serviceArea}</span>
-            <span className="text-xs font-bold text-blue-600">{topArea?.avgPerf.toFixed(2)}%</span>
-          </div>
-          <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-2xs">
-            <span className="text-slate-500">Sektor Terbaik:</span>
-            <span className="font-bold text-slate-700">{topArea?.topSektor.name} (100%)</span>
-          </div>
-        </div>
-
-        {/* Card 4: Top Sektor Rank 1 */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-semibold">
-            <span>TOP SEKTOR (RANK 1)</span>
-            <span className="p-1 rounded-md bg-amber-50 text-amber-700">
-              <Sparkles className="w-3.5 h-3.5" />
-            </span>
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900 tracking-tight">
-              {currentDataset.summary.topSektorName}
-            </span>
-            <span className="text-xs font-bold text-emerald-600">
-              {currentDataset.summary.topSektorPerf.toFixed(2)}%
-            </span>
-          </div>
-          <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-2xs">
-            <span className="text-slate-500">Capaian Nilai:</span>
-            <span className="font-bold text-slate-700">Perf Sempurna 100%</span>
-          </div>
-        </div>
       </div>
 
       {/* ANALYTICS NAVIGATION TABS */}
@@ -716,19 +683,6 @@ export default function KpiImbalJasaAnalytics({
         >
           <MapPin className="w-3.5 h-3.5" />
           <span>Analisa Per Service Area</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setViewMode('sektor')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-            viewMode === 'sektor'
-              ? 'bg-red-600 text-white shadow-xs'
-              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-          }`}
-        >
-          <Building2 className="w-3.5 h-3.5" />
-          <span>Ranking & Komparasi 16 Sektor</span>
         </button>
 
         <button
@@ -766,8 +720,8 @@ export default function KpiImbalJasaAnalytics({
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 text-xs font-bold">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                     {selectedServiceAreaFilter === 'ALL'
-                      ? '100% Hak Imbal Jasa Lunas (Konsisten > 95%)'
-                      : `Hak Imbal Jasa SA ${selectedServiceAreaFilter}`}
+                      ? 'Target Terpenuhi Konsisten (> 95%)'
+                      : `Target Terpenuhi SA ${selectedServiceAreaFilter}`}
                   </span>
                 </div>
                 <h3 className="text-base font-black text-slate-900 mt-2">
@@ -878,7 +832,11 @@ export default function KpiImbalJasaAnalytics({
 
                       <div className="bg-white/80 p-2.5 rounded-lg border border-slate-200/60">
                         <span className="text-[10px] font-semibold text-slate-500 block truncate">
-                          {selectedServiceAreaFilter === 'ALL' ? 'Performansi Branch' : `Performansi SA ${selectedServiceAreaFilter}`}
+                          {selectedKomboSector !== 'ALL'
+                            ? `Performansi ${selectedKomboSector}`
+                            : selectedServiceAreaFilter === 'ALL'
+                            ? 'Performansi Branch'
+                            : `Performansi SA ${selectedServiceAreaFilter}`}
                         </span>
                         <div className="flex items-baseline gap-1 mt-0.5">
                           <span className="text-lg font-black text-red-600">{item.perfBranch}%</span>
@@ -905,63 +863,105 @@ export default function KpiImbalJasaAnalytics({
 
           {/* MAIN CHART 1: KOMBO PENCAPAIAN NILAI KPI SETIAP BULAN & TREND */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-100">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pb-3 border-b border-slate-100">
               <div>
-                <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                <h4 className="text-sm font-black text-slate-900 flex items-center gap-2 flex-wrap">
                   <BarChart3 className="w-4 h-4 text-red-600" />
                   <span>
                     Grafik Kombo: Nilai Pencapaian KPI Setiap Bulan &amp; Trend Performansi
-                    {selectedServiceAreaFilter !== 'ALL' && (
+                    {selectedKomboSector !== 'ALL' ? (
+                      <span className="ml-2 text-2xs font-black text-red-700 bg-red-100 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 border border-red-200">
+                        <Building2 className="w-2.5 h-2.5" />
+                        Sektor: {selectedKomboSector}
+                      </span>
+                    ) : selectedServiceAreaFilter !== 'ALL' ? (
                       <span className="ml-2 text-2xs font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
                         <MapPin className="w-2.5 h-2.5" />
                         SA {selectedServiceAreaFilter}
                       </span>
-                    )}
+                    ) : null}
                   </span>
                 </h4>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Menampilkan Batang Pencapaian KPI (Biru), Batang Nilai Realisasi{' '}
-                  {selectedServiceAreaFilter !== 'ALL' ? `SA ${selectedServiceAreaFilter}` : 'Branch'} (Merah), serta Garis Tren Skor Terbobot (Amber).
+                  {selectedKomboSector !== 'ALL'
+                    ? `Sektor ${selectedKomboSector}`
+                    : selectedServiceAreaFilter !== 'ALL'
+                    ? `SA ${selectedServiceAreaFilter}`
+                    : 'Branch'}{' '}
+                  (Merah), serta Garis Tren Skor Terbobot (Amber).
                 </p>
               </div>
 
-              {/* Mode scale toggles */}
-              <div className="flex items-center gap-2 flex-wrap text-xs">
-                <span className="text-slate-500 font-semibold text-2xs">Mode Skala:</span>
-                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg text-2xs font-bold">
-                  <button
-                    type="button"
-                    onClick={() => setTrendScaleMode('achievement')}
-                    className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
-                      trendScaleMode === 'achievement'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
+              {/* Controls: Filter Sektor & Mode scale toggles */}
+              <div className="flex items-center gap-3 flex-wrap text-xs">
+                {/* Filter Sektor Dropdown */}
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-2 shadow-2xs">
+                  <Building2 className="w-4 h-4 text-red-600 shrink-0" />
+                  <select
+                    id="filter-kombo-sektor-select"
+                    aria-label="Filter Sektor Grafik Kombo"
+                    value={selectedKomboSector}
+                    onChange={(e) => setSelectedKomboSector(e.target.value)}
+                    className="bg-transparent text-xs font-black text-slate-900 focus:outline-hidden cursor-pointer min-w-[155px]"
                   >
-                    Pencapaian (90% - 115%)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTrendScaleMode('zoom')}
-                    className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
-                      trendScaleMode === 'zoom'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Zoom Sensitif (97% - 100.5%)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTrendScaleMode('standard')}
-                    className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
-                      trendScaleMode === 'standard'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Skala Penuh (80% - 120%)
-                  </button>
+                    <option value="ALL">ALL (Semua Sektor)</option>
+                    {allSectorNames.map((sektor) => (
+                      <option key={sektor} value={sektor}>
+                        Sektor {sektor}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedKomboSector !== 'ALL' && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedKomboSector('ALL')}
+                      className="px-1.5 py-0.5 text-[10px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded transition cursor-pointer"
+                      title="Reset filter ke ALL"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+
+                {/* Mode scale toggles */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-500 font-semibold text-2xs">Mode Skala:</span>
+                  <div className="flex items-center bg-slate-100 p-0.5 rounded-lg text-2xs font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setTrendScaleMode('achievement')}
+                      className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
+                        trendScaleMode === 'achievement'
+                          ? 'bg-white text-slate-900 shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Pencapaian (90% - 115%)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTrendScaleMode('zoom')}
+                      className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
+                        trendScaleMode === 'zoom'
+                          ? 'bg-white text-slate-900 shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Zoom (97% - 100.5%)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTrendScaleMode('standard')}
+                      className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
+                        trendScaleMode === 'standard'
+                          ? 'bg-white text-slate-900 shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Skala Penuh
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1059,7 +1059,9 @@ export default function KpiImbalJasaAnalytics({
                   <Bar
                     dataKey="perfBranch"
                     name={
-                      selectedServiceAreaFilter !== 'ALL'
+                      selectedKomboSector !== 'ALL'
+                        ? `Skor Realisasi Sektor ${selectedKomboSector} (%)`
+                        : selectedServiceAreaFilter !== 'ALL'
                         ? `Skor Realisasi SA ${selectedServiceAreaFilter} (%)`
                         : 'Skor Realisasi Branch (%)'
                     }
@@ -1107,9 +1109,12 @@ export default function KpiImbalJasaAnalytics({
               <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200/60 flex items-start gap-2.5">
                 <span className="w-3 h-3 rounded-full bg-blue-600 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-blue-900 font-bold block">Pencapaian KPI Rata-Rata: 109.32%</strong>
+                  <strong className="text-blue-900 font-bold block">
+                    Pencapaian KPI ({selectedKomboSector !== 'ALL' ? `Sektor ${selectedKomboSector}` : 'Periode Terkini'}):{' '}
+                    {historicalTrendData[historicalTrendData.length - 1]?.pencapaianRataRata}%
+                  </strong>
                   <p className="text-blue-700 text-2xs mt-0.5">
-                    Mengalami tren peningkatan berkelanjutan dari Juli (108.40%) &rarr; Agustus (108.97%) &rarr; September (109.32%).
+                    Dihitung proporsional terhadap Target Standar Performansi 100%. Pencapaian 100% didapatkan jika performansi mencapai 100%.
                   </p>
                 </div>
               </div>
@@ -1117,9 +1122,14 @@ export default function KpiImbalJasaAnalytics({
               <div className="p-3 bg-red-50/60 rounded-xl border border-red-200/60 flex items-start gap-2.5">
                 <span className="w-3 h-3 rounded-full bg-red-600 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-red-900 font-bold block">Skor Performansi Branch: 99.51%</strong>
+                  <strong className="text-red-900 font-bold block">
+                    Skor Realisasi ({selectedKomboSector !== 'ALL' ? `Sektor ${selectedKomboSector}` : 'Branch'}):{' '}
+                    {historicalTrendData[historicalTrendData.length - 1]?.perfBranch}%
+                  </strong>
                   <p className="text-red-700 text-2xs mt-0.5">
-                    Realisasi performansi branch melampaui target imbal jasa 95.0% di seluruh bulan dengan puncak di September (99.51%).
+                    {historicalTrendData[historicalTrendData.length - 1]?.perfBranch >= 95.0
+                      ? 'Realisasi performansi memenuhi batas target hak imbal jasa (≥ 95.0%).'
+                      : 'Realisasi performansi memerlukan akselerasi untuk mencapai target imbal jasa 95.0%.'}
                   </p>
                 </div>
               </div>
@@ -1127,441 +1137,15 @@ export default function KpiImbalJasaAnalytics({
               <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/60 flex items-start gap-2.5">
                 <span className="w-3 h-3 rounded-full bg-amber-500 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-amber-900 font-bold block">Skor Terbobot KPI: 98.51 / 100</strong>
+                  <strong className="text-amber-900 font-bold block">
+                    Skor Terbobot KPI:{' '}
+                    {historicalTrendData[historicalTrendData.length - 1]?.totalSkor} / 100
+                  </strong>
                   <p className="text-amber-700 text-2xs mt-0.5">
-                    Tren akumulasi skor berbobot konsisten prima dengan recovery kuat di September setelah sedikit variasi di Agustus (98.19).
+                    Akumulasi pembobotan 17 indikator SLA pada periode terkini.
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* MAIN CHART 2: KOMPARASI TREN PENCAPAIAN INDIKATOR BULANAN DENGAN SISTEM FILTER */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pb-3 border-b border-slate-100">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-indigo-600" />
-                    <span>Komparasi Tren Nilai Indikator KPI Bulanan (Mei s/d September)</span>
-                  </h4>
-                  {selectedIndicatorFilter !== 'ALL' && (
-                    <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-bold">
-                      Filter Aktif: No. {selectedIndicatorFilter}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Pilih indikator spesifik melalui dropdown filter KPI atau kategori untuk melihat visualisasi tren grafik dan data tabel yang tersinkronisasi.
-                </p>
-              </div>
-
-              {/* Filter Controls Row */}
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                {/* Metric toggle */}
-                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg text-2xs font-bold">
-                  <button
-                    type="button"
-                    onClick={() => setIndicatorValueMetric('pencapaian')}
-                    className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
-                      indicatorValueMetric === 'pencapaian'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    % Pencapaian Target
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIndicatorValueMetric('realisasi')}
-                    className={`px-2.5 py-1 rounded-md transition cursor-pointer ${
-                      indicatorValueMetric === 'realisasi'
-                        ? 'bg-white text-slate-900 shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Nilai Realisasi Aktual
-                  </button>
-                </div>
-
-                {/* Quick Category filter buttons */}
-                <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-2xs font-semibold">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIndicatorTrendFilter('ALL');
-                      setSelectedIndicatorFilter('ALL');
-                    }}
-                    className={`px-2 py-1 rounded-md transition cursor-pointer ${
-                      indicatorTrendFilter === 'ALL' && selectedIndicatorFilter === 'ALL'
-                        ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                        : 'text-slate-600'
-                    }`}
-                  >
-                    Semua ({multiMonthIndicatorTrends.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIndicatorTrendFilter('TTR');
-                      setSelectedIndicatorFilter('ALL');
-                    }}
-                    className={`px-2 py-1 rounded-md transition cursor-pointer ${
-                      indicatorTrendFilter === 'TTR' && selectedIndicatorFilter === 'ALL'
-                        ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                        : 'text-slate-600'
-                    }`}
-                  >
-                    TTR Speed
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIndicatorTrendFilter('SLA_AVAIL');
-                      setSelectedIndicatorFilter('ALL');
-                    }}
-                    className={`px-2 py-1 rounded-md transition cursor-pointer ${
-                      indicatorTrendFilter === 'SLA_AVAIL' && selectedIndicatorFilter === 'ALL'
-                        ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                        : 'text-slate-600'
-                    }`}
-                  >
-                    ASGAR &amp; Avail
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIndicatorTrendFilter('FIELD');
-                      setSelectedIndicatorFilter('ALL');
-                    }}
-                    className={`px-2 py-1 rounded-md transition cursor-pointer ${
-                      indicatorTrendFilter === 'FIELD' && selectedIndicatorFilter === 'ALL'
-                        ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                        : 'text-slate-600'
-                    }`}
-                  >
-                    Validasi Lapangan
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIndicatorTrendFilter('SQM_TOOLS');
-                      setSelectedIndicatorFilter('ALL');
-                    }}
-                    className={`px-2 py-1 rounded-md transition cursor-pointer ${
-                      indicatorTrendFilter === 'SQM_TOOLS' && selectedIndicatorFilter === 'ALL'
-                        ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                        : 'text-slate-600'
-                    }`}
-                  >
-                    SQM &amp; Alat
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Dropdown KPI & Service Area Selector Bar */}
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
-                {/* 1. Filter Dropdown KPI */}
-                <div className="flex items-center gap-2 flex-1 min-w-[260px]">
-                  <Filter className="w-4 h-4 text-indigo-600 shrink-0" />
-                  <span className="text-xs font-bold text-slate-700 whitespace-nowrap">
-                    Pilih Dropdown KPI:
-                  </span>
-                  <select
-                    id="filter-dropdown-kpi-select"
-                    value={selectedIndicatorFilter}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setSelectedIndicatorFilter(val === 'ALL' ? 'ALL' : Number(val));
-                    }}
-                    className="bg-white border border-indigo-200 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-900 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500/30 w-full cursor-pointer"
-                  >
-                    <option value="ALL">-- Tampilkan Semua Indikator KPI (17 Indikator) --</option>
-                    <optgroup label="Kelompok SLA & Availibility">
-                      {multiMonthIndicatorTrends
-                        .filter((i) => i.categoryGroup === 'SLA_AVAIL')
-                        .map((ind) => (
-                          <option key={ind.no} value={ind.no}>
-                            {ind.no}. {ind.name} (Target: {ind.target}{ind.satuan} | Bobot: {ind.bobot}%)
-                          </option>
-                        ))}
-                    </optgroup>
-                    <optgroup label="Kelompok Kecepatan Perbaikan (TTR Speed)">
-                      {multiMonthIndicatorTrends
-                        .filter((i) => i.categoryGroup === 'TTR')
-                        .map((ind) => (
-                          <option key={ind.no} value={ind.no}>
-                            {ind.no}. {ind.name} (Target: {ind.target}{ind.satuan} | Bobot: {ind.bobot}%)
-                          </option>
-                        ))}
-                    </optgroup>
-                    <optgroup label="Kelompok Validasi Lapangan & Saldo Tiket">
-                      {multiMonthIndicatorTrends
-                        .filter((i) => i.categoryGroup === 'FIELD')
-                        .map((ind) => (
-                          <option key={ind.no} value={ind.no}>
-                            {ind.no}. {ind.name} (Target: {ind.target}{ind.satuan} | Bobot: {ind.bobot}%)
-                          </option>
-                        ))}
-                    </optgroup>
-                    <optgroup label="Kelompok SQM & Alat Kerja Teknisi">
-                      {multiMonthIndicatorTrends
-                        .filter((i) => i.categoryGroup === 'SQM_TOOLS')
-                        .map((ind) => (
-                          <option key={ind.no} value={ind.no}>
-                            {ind.no}. {ind.name} (Target: {ind.target}{ind.satuan} | Bobot: {ind.bobot}%)
-                          </option>
-                        ))}
-                    </optgroup>
-                  </select>
-                </div>
-
-                {/* 2. Filter Service Area (di samping kanan menu Pilih Dropdown KPI) */}
-                <div className="flex items-center gap-2 shrink-0 sm:w-auto">
-                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span className="text-xs font-bold text-slate-700 whitespace-nowrap">
-                    Service Area:
-                  </span>
-                  <select
-                    id="filter-service-area-select"
-                    value={selectedServiceAreaFilter}
-                    onChange={(e) => setSelectedServiceAreaFilter(e.target.value)}
-                    className="bg-white border border-emerald-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-900 shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-emerald-500/30 min-w-[170px] cursor-pointer"
-                  >
-                    <option value="ALL">Semua Service Area (All Branch)</option>
-                    {allServiceAreas.map((sa) => (
-                      <option key={sa} value={sa}>
-                        SA {sa}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Status or Reset Action */}
-              <div className="flex items-center gap-2 shrink-0 justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
-                <span className="text-2xs font-semibold text-slate-500">
-                  Menampilkan: <strong className="text-indigo-900">{filteredIndicatorTrends.length} KPI</strong>
-                  {selectedServiceAreaFilter !== 'ALL' && (
-                    <span className="ml-1 text-emerald-700 font-bold">
-                      &bull; SA {selectedServiceAreaFilter}
-                    </span>
-                  )}
-                </span>
-                {(selectedIndicatorFilter !== 'ALL' || indicatorTrendFilter !== 'ALL' || selectedServiceAreaFilter !== 'ALL') && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedIndicatorFilter('ALL');
-                      setIndicatorTrendFilter('ALL');
-                      setSelectedServiceAreaFilter('ALL');
-                    }}
-                    className="px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 text-2xs font-bold transition cursor-pointer shadow-2xs"
-                  >
-                    Reset Filter
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Single KPI Detailed Highlight Card if 1 KPI selected */}
-            {selectedIndicatorFilter !== 'ALL' && filteredIndicatorTrends[0] && (
-              <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-50/90 via-slate-50 to-blue-50/70 border border-indigo-100/90 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-2 py-0.5 rounded bg-indigo-600 text-white font-extrabold text-2xs">
-                      KPI #{filteredIndicatorTrends[0].no}
-                    </span>
-                    {selectedServiceAreaFilter !== 'ALL' && (
-                      <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-2xs flex items-center gap-1">
-                        <MapPin className="w-2.5 h-2.5" />
-                        SA {selectedServiceAreaFilter}
-                      </span>
-                    )}
-                    <h5 className="text-sm font-black text-slate-900">
-                      {filteredIndicatorTrends[0].name}
-                    </h5>
-                    <span className="text-2xs font-semibold text-slate-500">
-                      ({filteredIndicatorTrends[0].code})
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600">
-                    Kategori: <strong>{filteredIndicatorTrends[0].kategori}</strong> &bull; Target Standar:{' '}
-                    <strong>{filteredIndicatorTrends[0].target}{filteredIndicatorTrends[0].satuan}</strong> &bull; Bobot:{' '}
-                    <strong>{filteredIndicatorTrends[0].bobot}%</strong>
-                    {selectedServiceAreaFilter !== 'ALL' && (
-                      <span className="text-emerald-700 font-semibold"> &bull; Nilai Realisasi dihitung dari rata-rata sektor di SA {selectedServiceAreaFilter}</span>
-                    )}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 text-center">
-                    <span className="text-[10px] text-amber-600 font-semibold block">Mei 2026</span>
-                    <span className="text-xs font-bold text-slate-700">
-                      {filteredIndicatorTrends[0].meiReal}{filteredIndicatorTrends[0].satuan} ({filteredIndicatorTrends[0].meiAchv}%)
-                    </span>
-                  </div>
-                  <div className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 text-center">
-                    <span className="text-[10px] text-teal-600 font-semibold block">Juni 2026</span>
-                    <span className="text-xs font-bold text-slate-700">
-                      {filteredIndicatorTrends[0].junReal}{filteredIndicatorTrends[0].satuan} ({filteredIndicatorTrends[0].junAchv}%)
-                    </span>
-                  </div>
-                  <div className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 text-center">
-                    <span className="text-[10px] text-slate-500 font-semibold block">Juli 2026</span>
-                    <span className="text-xs font-bold text-slate-700">
-                      {filteredIndicatorTrends[0].julReal}{filteredIndicatorTrends[0].satuan} ({filteredIndicatorTrends[0].julAchv}%)
-                    </span>
-                  </div>
-                  <div className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 text-center">
-                    <span className="text-[10px] text-blue-500 font-semibold block">Agustus 2026</span>
-                    <span className="text-xs font-bold text-blue-700">
-                      {filteredIndicatorTrends[0].aguReal}{filteredIndicatorTrends[0].satuan} ({filteredIndicatorTrends[0].aguAchv}%)
-                    </span>
-                  </div>
-                  <div className="bg-white px-2.5 py-1.5 rounded-lg border border-red-200 text-center">
-                    <span className="text-[10px] text-red-500 font-semibold block">September 2026</span>
-                    <span className="text-xs font-bold text-red-700">
-                      {filteredIndicatorTrends[0].sepReal}{filteredIndicatorTrends[0].satuan} ({filteredIndicatorTrends[0].sepAchv}%)
-                    </span>
-                  </div>
-                  <div className="bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 text-center">
-                    <span className="text-[10px] text-slate-500 font-semibold block">Trend MoM</span>
-                    <span className={`text-xs font-bold flex items-center justify-center gap-0.5 ${
-                      filteredIndicatorTrends[0].momPencapaian > 0 ? 'text-emerald-600' : filteredIndicatorTrends[0].momPencapaian < 0 ? 'text-red-600' : 'text-slate-600'
-                    }`}>
-                      {filteredIndicatorTrends[0].momPencapaian > 0 ? '+' : ''}{filteredIndicatorTrends[0].momPencapaian}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Indicator Grouped Bar Chart */}
-            <div className="w-full" style={{ height: 340, minHeight: 340 }}>
-              <ResponsiveContainer width="100%" height={340}>
-                <BarChart
-                  data={filteredIndicatorTrends}
-                  margin={{ top: 15, right: 20, left: -10, bottom: 25 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis
-                    dataKey="shortName"
-                    tick={{ fontSize: 10, fill: '#475569' }}
-                    interval={0}
-                    angle={filteredIndicatorTrends.length > 3 ? -20 : 0}
-                    textAnchor={filteredIndicatorTrends.length > 3 ? 'end' : 'middle'}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: '#64748b' }}
-                    unit={indicatorValueMetric === 'pencapaian' ? '%' : ''}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#0f172a',
-                      borderRadius: '12px',
-                      color: '#fff',
-                      fontSize: '12px',
-                      border: 'none',
-                    }}
-                    formatter={(val: any, name: any, item: any) => {
-                      const ind = item.payload;
-                      const unit = indicatorValueMetric === 'pencapaian' ? '%' : ind.satuan;
-                      return [`${val} ${unit}`, name];
-                    }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '15px' }} />
-
-                  {indicatorValueMetric === 'pencapaian' && (
-                    <ReferenceLine
-                      y={100}
-                      stroke="#10b981"
-                      strokeDasharray="3 3"
-                      label={{ value: 'Target 100%', fill: '#059669', fontSize: 10, position: 'top' }}
-                    />
-                  )}
-
-                  <Bar
-                    dataKey={indicatorValueMetric === 'pencapaian' ? 'meiAchv' : 'meiReal'}
-                    name="Mei 2026"
-                    fill="#f59e0b"
-                    radius={[4, 4, 0, 0]}
-                    barSize={filteredIndicatorTrends.length === 1 ? 48 : undefined}
-                  >
-                    <LabelList
-                      dataKey={indicatorValueMetric === 'pencapaian' ? 'meiAchv' : 'meiReal'}
-                      position="top"
-                      fontSize={10}
-                      fill="#b45309"
-                      formatter={(v: any) => `${v}${indicatorValueMetric === 'pencapaian' ? '%' : ''}`}
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey={indicatorValueMetric === 'pencapaian' ? 'junAchv' : 'junReal'}
-                    name="Juni 2026"
-                    fill="#0d9488"
-                    radius={[4, 4, 0, 0]}
-                    barSize={filteredIndicatorTrends.length === 1 ? 48 : undefined}
-                  >
-                    <LabelList
-                      dataKey={indicatorValueMetric === 'pencapaian' ? 'junAchv' : 'junReal'}
-                      position="top"
-                      fontSize={10}
-                      fill="#0f766e"
-                      formatter={(v: any) => `${v}${indicatorValueMetric === 'pencapaian' ? '%' : ''}`}
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey={indicatorValueMetric === 'pencapaian' ? 'julAchv' : 'julReal'}
-                    name="Juli 2026"
-                    fill="#94a3b8"
-                    radius={[4, 4, 0, 0]}
-                    barSize={filteredIndicatorTrends.length === 1 ? 48 : undefined}
-                  >
-                    <LabelList
-                      dataKey={indicatorValueMetric === 'pencapaian' ? 'julAchv' : 'julReal'}
-                      position="top"
-                      fontSize={10}
-                      fill="#475569"
-                      formatter={(v: any) => `${v}${indicatorValueMetric === 'pencapaian' ? '%' : ''}`}
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey={indicatorValueMetric === 'pencapaian' ? 'aguAchv' : 'aguReal'}
-                    name="Agustus 2026"
-                    fill="#3b82f6"
-                    radius={[4, 4, 0, 0]}
-                    barSize={filteredIndicatorTrends.length === 1 ? 48 : undefined}
-                  >
-                    <LabelList
-                      dataKey={indicatorValueMetric === 'pencapaian' ? 'aguAchv' : 'aguReal'}
-                      position="top"
-                      fontSize={10}
-                      fill="#1d4ed8"
-                      formatter={(v: any) => `${v}${indicatorValueMetric === 'pencapaian' ? '%' : ''}`}
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey={indicatorValueMetric === 'pencapaian' ? 'sepAchv' : 'sepReal'}
-                    name="September 2026"
-                    fill="#dc2626"
-                    radius={[4, 4, 0, 0]}
-                    barSize={filteredIndicatorTrends.length === 1 ? 48 : undefined}
-                  >
-                    <LabelList
-                      dataKey={indicatorValueMetric === 'pencapaian' ? 'sepAchv' : 'sepReal'}
-                      position="top"
-                      fontSize={10}
-                      fill="#b91c1c"
-                      fontWeight={700}
-                      formatter={(v: any) => `${v}${indicatorValueMetric === 'pencapaian' ? '%' : ''}`}
-                    />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
             </div>
           </div>
 
@@ -1628,8 +1212,7 @@ export default function KpiImbalJasaAnalytics({
                 <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
                   <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
                   <span>
-                    Tabel Rekap Nilai Pencapaian &amp; Realisasi Indikator KPI Bulanan
-                    {selectedIndicatorFilter !== 'ALL' ? ` (Filtered: KPI No. ${selectedIndicatorFilter})` : ` (${filteredIndicatorTrends.length} Indikator)`}
+                    Tabel Rekap Nilai Pencapaian &amp; Realisasi Indikator KPI Bulanan ({multiMonthIndicatorTrends.length} Indikator)
                     {selectedServiceAreaFilter !== 'ALL' ? ` - SA ${selectedServiceAreaFilter}` : ' - All Branch'}
                   </span>
                 </h4>
@@ -1648,11 +1231,10 @@ export default function KpiImbalJasaAnalytics({
                 <span className="flex items-center gap-1 text-blue-600 font-bold">
                   &bull; Stabil
                 </span>
-                {(selectedIndicatorFilter !== 'ALL' || selectedServiceAreaFilter !== 'ALL') && (
+                {selectedServiceAreaFilter !== 'ALL' && (
                   <button
                     type="button"
                     onClick={() => {
-                      setSelectedIndicatorFilter('ALL');
                       setSelectedServiceAreaFilter('ALL');
                     }}
                     className="ml-2 text-2xs text-indigo-600 hover:text-indigo-800 font-bold underline cursor-pointer"
@@ -1686,7 +1268,7 @@ export default function KpiImbalJasaAnalytics({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {filteredIndicatorTrends.map((row) => {
+                  {multiMonthIndicatorTrends.map((row) => {
                     const isUp = row.trendDirection === 'UP';
                     const isDown = row.trendDirection === 'DOWN';
                     return (
@@ -1846,6 +1428,14 @@ export default function KpiImbalJasaAnalytics({
                     <div className="flex justify-between">
                       <span className="text-slate-400">Availability:</span>
                       <span className="font-semibold text-slate-700">{area.avgAvailability}%</span>
+                    </div>
+                    <div className="flex justify-between pt-1 border-t border-slate-200/50">
+                      <span className="text-slate-500 font-semibold">Estimasi Revenue:</span>
+                      <strong className="font-bold text-emerald-700 font-mono text-2xs">
+                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(
+                          Math.round((area.avgPerf / 100) * 233327246)
+                        )}
+                      </strong>
                     </div>
                   </div>
 
@@ -2065,174 +1655,7 @@ export default function KpiImbalJasaAnalytics({
         </div>
       )}
 
-      {/* VIEW 3: PER SEKTOR RANKING & COMPARISON */}
-      {viewMode === 'sektor' && (
-        <div className="space-y-6">
-          {/* Horizontal Ranking of All 16 Sectors */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-100">
-              <div>
-                <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-red-600" />
-                  <span>Leaderboard &amp; Ranking 16 Sektor ({currentDataset.monthLabel})</span>
-                </h4>
-                <p className="text-xs text-slate-500">
-                  Perbandingan capaian skor Performansi (%) masing-masing sektor, diurutkan dari Rank 1 hingga Rank 16.
-                </p>
-              </div>
-
-              {/* Area Filter Dropdown */}
-              <div className="flex items-center gap-2 text-xs">
-                <span className="font-semibold text-slate-500">Filter Area:</span>
-                <select
-                  value={selectedAreaFilter}
-                  onChange={(e) => setSelectedAreaFilter(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 focus:outline-hidden"
-                >
-                  <option value="ALL">Semua Area (16 Sektor)</option>
-                  {allServiceAreas.map((area) => (
-                    <option key={area} value={area}>
-                      Area {area}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Horizontal Bar Chart */}
-            <div className="h-96 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={sectorChartData}
-                  layout="vertical"
-                  margin={{ top: 5, right: 30, left: 55, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis type="number" domain={[85, 102]} tick={{ fontSize: 11, fill: '#64748b' }} unit="%" />
-                  <YAxis
-                    type="category"
-                    dataKey="displayName"
-                    tick={{ fontSize: 10, fill: '#1e293b', fontWeight: 600 }}
-                    width={85}
-                  />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#0f172a', borderRadius: '12px', color: '#fff', fontSize: '11px' }}
-                    formatter={(val: any, name: any, item: any) => [
-                      `${val}% (Rank #${item.payload.rank} - Area ${item.payload.serviceArea})`,
-                      'Performansi',
-                    ]}
-                  />
-                  <ReferenceLine x={95.0} stroke="#10b981" strokeDasharray="4 4" label={{ value: 'Target 95%', fill: '#059669', fontSize: 10, position: 'insideTopRight' }} />
-                  <Bar dataKey="perf" name="Performansi Sektor" radius={[0, 4, 4, 0]}>
-                    {sectorChartData.map((entry, index) => (
-                      <Cell
-                        key={`sector-cell-${index}`}
-                        fill={
-                          entry.perf >= 99.0
-                            ? '#059669' // Emerald
-                            : entry.perf >= 95.0
-                            ? '#2563eb' // Blue
-                            : '#dc2626' // Red
-                        }
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex items-center justify-center gap-6 text-2xs text-slate-500 pt-2 border-t border-slate-100">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
-                <span>Tier 1: Sempurna (≥ 99.0%)</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                <span>Tier 2: Memenuhi Target (95.0% - 98.9%)</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-600" />
-                <span>Tier 3: Di Bawah Target (&lt; 95.0%)</span>
-              </span>
-            </div>
-          </div>
-
-          {/* Interactive Sector Head-to-Head Comparison */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-100">
-              <div>
-                <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-purple-600" />
-                  <span>Komparasi Head-to-Head Antar Sektor</span>
-                </h4>
-                <p className="text-xs text-slate-500">
-                  Bandingkan dua sektor secara langsung pada 10 metrik operasional kritis untuk menemukan area peningkatan.
-                </p>
-              </div>
-
-              {/* Sektor Selectors */}
-              <div className="flex items-center gap-2 flex-wrap text-xs">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-red-600">Sektor A:</span>
-                  <select
-                    value={compareSectorA}
-                    onChange={(e) => setCompareSectorA(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800"
-                  >
-                    {currentDataset.sectorRows.map((s) => (
-                      <option key={s.sektor} value={s.sektor}>
-                        {s.sektor} (#{s.rank})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="h-4 w-px bg-slate-300 mx-1 hidden sm:block" />
-
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-blue-600">Sektor B:</span>
-                  <select
-                    value={compareSectorB}
-                    onChange={(e) => setCompareSectorB(e.target.value)}
-                    className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-800"
-                  >
-                    {currentDataset.sectorRows.map((s) => (
-                      <option key={s.sektor} value={s.sektor}>
-                        {s.sektor} (#{s.rank})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Grouped Bar Chart Head-to-Head */}
-            <div className="h-72 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={sectorComparisonData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis
-                    dataKey="metric"
-                    tick={{ fontSize: 10, fill: '#334155', fontWeight: 600 }}
-                    interval={0}
-                    angle={-15}
-                    textAnchor="end"
-                  />
-                  <YAxis domain={[40, 105]} tick={{ fontSize: 11, fill: '#64748b' }} unit="%" />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#0f172a', borderRadius: '10px', color: '#fff', fontSize: '11px' }}
-                    formatter={(v: any) => [`${v}%`]}
-                  />
-                  <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey={compareSectorA} name={`${compareSectorA} (A)`} fill="#dc2626" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey={compareSectorB} name={`${compareSectorB} (B)`} fill="#2563eb" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* VIEW 4: GAP 17 INDIKATOR SLA & BOBOT KONTRIBUSI */}
+      {/* VIEW 3: GAP 17 INDIKATOR SLA & BOBOT KONTRIBUSI */}
       {viewMode === 'indicators' && (
         <div className="space-y-6">
           {/* Chart: Gap to Target per Indicator */}

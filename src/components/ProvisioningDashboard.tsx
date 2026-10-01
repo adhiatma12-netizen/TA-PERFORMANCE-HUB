@@ -43,7 +43,8 @@ import {
   ChevronRight,
   ListFilter,
   RefreshCw,
-  SlidersHorizontal
+  SlidersHorizontal,
+  DollarSign
 } from 'lucide-react';
 import { rawProvisioningData, ProvisioningRow } from '../data/provisioningStats';
 import { parseCSV } from '../lib/googleSheets';
@@ -2330,7 +2331,27 @@ export default function ProvisioningDashboard({
       {currentSubTab === 'sektor' && (
         <>
           {/* SECTION 3: KEY PERFORMANCE INDICATORS (KPIs) CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6" id="provisioning-kpis">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6" id="provisioning-kpis">
+        {/* KPI 0: ESTIMASI REVENUE */}
+        <div className="bg-slate-900 text-white rounded-3xl p-5 shadow-md flex flex-col justify-between hover:shadow-lg hover:scale-[1.01] transition-all">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Estimasi Revenue</span>
+              <div className="p-2 bg-slate-800 text-red-500 rounded-xl">
+                <DollarSign className="w-4 h-4" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-2xl font-black font-sans text-red-500 tracking-tight">
+                Rp {formatNum(yearSummary.totalRE * 550000)}
+              </h3>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-800 text-[10.5px] font-semibold text-slate-400 flex items-center justify-between">
+            <span>Tarif berdasar HSS PSB</span>
+          </div>
+        </div>
+
         {/* KPI 1: TOTAL WO */}
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
           <div>
@@ -2355,7 +2376,7 @@ export default function ProvisioningDashboard({
         <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Completion Rate</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Realisasi (RE)</span>
               <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
                 <CheckCircle className="w-4 h-4" />
               </div>
@@ -2604,10 +2625,10 @@ export default function ProvisioningDashboard({
         {/* Main Diagram Lingkaran (Pie / Donut) + Detailed Breakdown Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
           {/* Diagram Lingkaran (Donut Chart) */}
-          <div className="lg:col-span-5 flex flex-col items-center justify-center p-4 bg-slate-50/50 rounded-2xl border border-slate-100 relative">
-            <div className="relative w-full max-w-[280px] h-64 flex items-center justify-center">
+          <div className="lg:col-span-5 flex flex-col items-center justify-center p-5 bg-slate-50/50 rounded-2xl border border-slate-100 relative">
+            <div className="relative w-full max-w-[300px] h-72 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+                <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }} className="overflow-visible">
                   <Tooltip
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
@@ -2646,8 +2667,8 @@ export default function ProvisioningDashboard({
                     data={segmentDistributionStats.segmentsList}
                     cx="50%"
                     cy="50%"
-                    innerRadius={68}
-                    outerRadius={100}
+                    innerRadius={60}
+                    outerRadius={88}
                     paddingAngle={3}
                     dataKey="value"
                     nameKey="name"
@@ -2658,6 +2679,7 @@ export default function ProvisioningDashboard({
                         fill={entry.color}
                         stroke="#FFFFFF"
                         strokeWidth={2}
+                        opacity={selectedSegment === 'All' || selectedSegment === entry.name ? 1 : 0.45}
                         className="cursor-pointer hover:opacity-90 transition-opacity"
                         onClick={() => setSelectedSegment(selectedSegment === entry.name ? 'All' : entry.name)}
                       />

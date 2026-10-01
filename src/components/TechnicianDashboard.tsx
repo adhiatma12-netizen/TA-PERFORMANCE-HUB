@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { RegionalPerformanceData, Regional, Technician } from '../types';
-import { fetchLiveProgressData, LiveProgressRecord, fetchAllroundMadiunSheetData, AllroundSheetRow } from '../lib/googleSheets';
+import { fetchLiveProgressData, LiveProgressRecord, fetchAllroundMadiunSheetData, AllroundSheetRow, fetchPbsSheetData, PbsRecord, fallbackPbsData } from '../lib/googleSheets';
 import {
   Users,
   Activity,
@@ -230,6 +230,56 @@ export default function TechnicianDashboard({
   const [progressSearch, setProgressSearch] = useState<string>('');
   const [lastSyncedTime, setLastSyncedTime] = useState<string>('');
   const [modalSearchQuery, setModalSearchQuery] = useState<string>('');
+  const [pbsRecords, setPbsRecords] = useState<PbsRecord[]>(fallbackPbsData);
+
+  // Helper to retrieve PBS Point from Google Sheets for the specified technician and activeMonth
+  // Google Sheet ID: 1weBRqT10YFQEg09OuwswJWsHiQWbDnCJl4Ff6OpR_JE (Sheet: PBS)
+  // Kolom B = NIK, Kolom C = NAMA, Kolom D = JUNI, Kolom E = JULI, Kolom F = AGUSTUS
+  // If outside Juni/Juli/Agustus, show 'Data belum tersedia'
+  const getPbsInfo = (techId: string, techName: string, month: string): { status: 'available' | 'unavailable'; value: string | null; formatted: string } => {
+    if (!month) return { status: 'unavailable', value: null, formatted: 'Data belum tersedia' };
+    const m = month.trim().toLowerCase();
+    
+    // Check if month is one of the supported months (Juni, Juli, Agustus)
+    const isJuni = m === 'juni' || m === 'june' || m === 'jun';
+    const isJuli = m === 'juli' || m === 'july' || m === 'jul';
+    const isAgustus = m === 'agustus' || m === 'august' || m === 'agt' || m === 'aug';
+
+    if (!isJuni && !isJuli && !isAgustus) {
+      return { status: 'unavailable', value: null, formatted: 'Data belum tersedia' };
+    }
+
+    // Match technician by NIK (Kolom B) or NAMA (Kolom C)
+    const cleanId = (techId || '').trim();
+    const cleanName = (techName || '').trim().toUpperCase();
+
+    const record = pbsRecords.find(r => 
+      (cleanId && r.nik.trim() === cleanId) || 
+      (cleanName && r.nama.trim().toUpperCase() === cleanName)
+    );
+
+    if (!record) {
+      return { status: 'unavailable', value: null, formatted: 'Data belum tersedia' };
+    }
+
+    let rawVal = '';
+    if (isJuni) rawVal = record.juni;
+    else if (isJuli) rawVal = record.juli;
+    else if (isAgustus) rawVal = record.agustus;
+
+    if (!rawVal || rawVal.trim() === '') {
+      return { status: 'unavailable', value: null, formatted: 'Data belum tersedia' };
+    }
+
+    const cleanVal = rawVal.trim().replace(',', '.');
+    const parsedNum = parseFloat(cleanVal);
+    if (isNaN(parsedNum)) {
+      return { status: 'unavailable', value: null, formatted: 'Data belum tersedia' };
+    }
+
+    const formatted = parsedNum % 1 === 0 ? parsedNum.toString() : parsedNum.toFixed(2);
+    return { status: 'available', value: formatted, formatted };
+  };
 
   // Helper to match dates in spreadsheet with active month and year
   const matchMonthYear = (dateStr: string, activeMonth: string, activeYear: string): boolean => {
@@ -339,6 +389,10 @@ export default function TechnicianDashboard({
         };
       });
       setAllroundProgressRows(mappedAllroundRows);
+
+      // 3. Fetch PBS sheet data from spreadsheet 1weBRqT10YFQEg09OuwswJWsHiQWbDnCJl4Ff6OpR_JE
+      const pbsData = await fetchPbsSheetData();
+      setPbsRecords(pbsData);
 
       const now = new Date();
       const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1117,16 +1171,20 @@ export default function TechnicianDashboard({
                     'Field Utilization': `${dynamicUtilizationRate}%`,
                     'Attendance Rate': `${dynamicAttendanceRate}%`,
                   },
-                  filteredTechs.slice(0, 15).map(t => ({
-                    Nama: t.name,
-                    Witel: t.witel,
-                    Status: t.status,
-                    Kompetensi: t.skillLevel,
-                    'Tiket Selesai': t.ticketsResolved,
-                    Produktivitas: t.productivityScore,
-                    'PSB Selesai': t.psbCompleted,
-                    Rating: t.rating,
-                  })),
+                  filteredTechs.slice(0, 15).map(t => {
+                    const pbs = getPbsInfo(t.id, t.name, activeMonth);
+                    return {
+                      Nama: t.name,
+                      Witel: t.witel,
+                      Status: t.status,
+                      Kompetensi: t.skillLevel,
+                      'Tiket Selesai': t.ticketsResolved,
+                      'Point PBS': pbs.status === 'available' ? pbs.formatted : 'Data belum tersedia',
+                      Produktivitas: t.productivityScore,
+                      'PSB Selesai': t.psbCompleted,
+                      Rating: t.rating,
+                    };
+                  }),
                   { 'Filter Nama/Witel': searchQuery || 'Semua' },
                   'Evaluasi performansi dan produktivitas teknisi pada tabel ini. Identifikasi top performer dan teknisi yang memerlukan pembinaan atau redistribusi beban kerja.'
                 )
@@ -1181,12 +1239,16 @@ export default function TechnicianDashboard({
                 <h5 className="text-xs font-bold text-red-900">Aturan Kalkulasi Performansi Individu (Witel Madiun)</h5>
               </div>
             </div>
-            <div className="flex gap-2 shrink-0">
+            <div className="flex flex-wrap gap-2 shrink-0 items-center">
               <span className="px-2.5 py-1 bg-white border border-red-200/50 text-red-800 rounded-lg text-[10px] font-mono font-bold">
                 2 Nama = 0.5 Point
               </span>
               <span className="px-2.5 py-1 bg-white border border-red-200/50 text-red-800 rounded-lg text-[10px] font-mono font-bold">
                 1 Nama = 1.0 Point
+              </span>
+              <span className="px-2.5 py-1 bg-indigo-50 border border-indigo-200/60 text-indigo-700 rounded-lg text-[10px] font-mono font-bold flex items-center gap-1.5" title="Google Sheet PBS (ID: 1weBRqT10YFQEg09OuwswJWsHiQWbDnCJl4Ff6OpR_JE)">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                <span>PBS Terhubung</span>
               </span>
             </div>
           </div>
@@ -1203,6 +1265,12 @@ export default function TechnicianDashboard({
                     <th className="py-3 px-4">Ploting</th>
                     <th className="py-3 px-4">Area</th>
                     <th className="py-3 px-4 text-center bg-red-50 text-red-700 font-bold">TIKET CLOSE</th>
+                    <th className="py-3 px-4 text-center bg-indigo-50/70 text-indigo-700 font-bold" title="Pencapaian Point PBS dari Google Sheet">
+                      <div className="flex items-center justify-center space-x-1">
+                        <span>PBS</span>
+                        <span className="text-[9px] font-semibold text-indigo-500 uppercase">({activeMonth})</span>
+                      </div>
+                    </th>
                     <th className="py-3 px-4 text-center">Rating</th>
                     <th className="py-3 px-4">Status</th>
                     <th className="py-3 px-4 text-right">Aksi</th>
@@ -1235,6 +1303,21 @@ export default function TechnicianDashboard({
                           <span>{tech.ticketsResolved}</span>
                           <span className="text-[9px] text-red-500 font-bold px-1 py-0.5 bg-white rounded-md border border-red-100/50">Detail</span>
                         </button>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {(() => {
+                          const pbs = getPbsInfo(tech.id, tech.name, activeMonth);
+                          return pbs.status === 'available' ? (
+                            <div className="inline-flex items-center px-2.5 py-1 bg-indigo-50/70 border border-indigo-100/70 text-indigo-700 font-mono font-bold text-xs rounded-xl shadow-2xs">
+                              <span>{pbs.formatted}</span>
+                              <span className="text-[9px] text-indigo-400 font-semibold ml-1">Pt</span>
+                            </div>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-400 border border-slate-200/50" title="Data belum tersedia untuk periode bulan ini">
+                              Data belum tersedia
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center space-x-0.5 text-amber-500 font-semibold font-mono">
@@ -1802,13 +1885,34 @@ export default function TechnicianDashboard({
               {selectedTech.witel.toUpperCase() === 'ALLROUND' ? (
                 <>
                   {/* ALLROUND SPECIALIZED SUMMARY GRID */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-red-50/40 border border-red-100/50 p-4 rounded-2xl animate-fade-in">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-red-50/40 border border-red-100/50 p-4 rounded-2xl animate-fade-in">
                     <div className="text-center sm:text-left space-y-0.5">
                       <span className="text-[10px] font-extrabold text-red-500 uppercase tracking-wider block">Total Pencapaian Point</span>
                       <span className="text-3xl font-black text-red-600 font-mono">
                         {selectedTech.ticketsResolved}
                       </span>
                       <span className="text-[10px] text-red-700/80 block font-medium">Berdasarkan Status WO "PS"</span>
+                    </div>
+
+                    <div className="border-t sm:border-t-0 sm:border-l border-red-100/60 sm:pl-4 text-center sm:text-left space-y-0.5 pt-3 sm:pt-0">
+                      <span className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-wider block">Point PBS</span>
+                      {(() => {
+                        const pbs = getPbsInfo(selectedTech.id, selectedTech.name, activeMonth);
+                        return pbs.status === 'available' ? (
+                          <>
+                            <span className="text-3xl font-black text-indigo-700 font-mono">
+                              {pbs.formatted}
+                            </span>
+                            <span className="text-[10px] text-indigo-500 block font-medium">Bulan {activeMonth}</span>
+                          </>
+                        ) : (
+                          <div className="pt-2">
+                            <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-400 border border-slate-200/50">
+                              Data belum tersedia
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </div>
                     
                     <div className="border-t sm:border-t-0 sm:border-l border-red-100/60 sm:pl-4 text-center sm:text-left space-y-0.5 pt-3 sm:pt-0">
@@ -1957,13 +2061,31 @@ export default function TechnicianDashboard({
               ) : (
                 <>
                   {/* Highlight Metric Row */}
-                  <div className="grid grid-cols-2 gap-4 bg-red-50/30 border border-red-100/50 p-4 rounded-2xl">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-red-50/30 border border-red-100/50 p-4 rounded-2xl">
                     <div className="text-center sm:text-left">
                       <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider block">Total Tiket Close</span>
                       <span className="text-3xl font-black text-red-600 font-mono">{selectedTech.ticketsResolved}</span>
                       <span className="text-xs text-red-700/80 block mt-0.5 font-medium">Bulan {activeMonth}</span>
                     </div>
-                    <div className="border-l border-red-100/60 pl-4 flex flex-col justify-center">
+                    <div className="border-t sm:border-t-0 sm:border-l border-red-100/60 sm:pl-4 text-center sm:text-left">
+                      <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block">Point PBS</span>
+                      {(() => {
+                        const pbs = getPbsInfo(selectedTech.id, selectedTech.name, activeMonth);
+                        return pbs.status === 'available' ? (
+                          <>
+                            <span className="text-3xl font-black text-indigo-700 font-mono">{pbs.formatted}</span>
+                            <span className="text-xs text-indigo-700/80 block mt-0.5 font-medium">Bulan {activeMonth}</span>
+                          </>
+                        ) : (
+                          <div className="mt-2">
+                            <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 text-slate-400 border border-slate-200/50">
+                              Data belum tersedia
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                    <div className="border-t sm:border-t-0 sm:border-l border-red-100/60 sm:pl-4 flex flex-col justify-center">
                       <div className="flex items-center space-x-1 text-slate-500 text-xs font-semibold">
                         <span className="w-2 h-2 rounded-full bg-amber-500" />
                         <span>Rating: <strong>{selectedTech.rating} / 5.0</strong></span>

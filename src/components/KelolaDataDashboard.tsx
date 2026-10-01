@@ -199,7 +199,7 @@ export default function KelolaDataDashboard({
         role: isOwner ? 'OWNER' : 'USER',
         isOwner,
         explanation: isOwner 
-          ? `User ID "${found.user}" terdaftar di sheet [list user] dengan Kolom C bernilai "OWNER". Saat berhasil login via SSO (madiunjuara.com), akun ini seketika memperoleh wewenang OWNER (akses penuh halaman Kelola Data dibuka).`
+          ? `User ID "${found.user}" terdaftar di sheet [list user] dengan Kolom C bernilai "OWNER". Saat berhasil login via SSO, akun ini seketika memperoleh wewenang OWNER (akses penuh halaman Kelola Data dibuka).`
           : `User ID "${found.user}" terdaftar di sheet [list user] dengan Kolom C bernilai "USER". Saat berhasil login via SSO, akun ini mendapatkan hak akses USER reguler (halaman Kelola Data disembunyikan).`
       };
     }
@@ -208,7 +208,7 @@ export default function KelolaDataDashboard({
       account: null,
       role: 'USER',
       isOwner: false,
-      explanation: `User ID "${ssoSimulationId}" belum terdaftar di sheet [list user]. Jika pegawai ini berhasil login via SSO portal kantor (madiunjuara.com), sistem akan secara otomatis memberikan hak akses default USER. Untuk mengangkat akun ini menjadi OWNER, silakan tambahkan baris baru di sheet [list user] dengan User ID ini pada Kolom A dan isi Kolom C dengan "OWNER".`
+      explanation: `User ID "${ssoSimulationId}" belum terdaftar di sheet [list user]. Jika pegawai ini berhasil login via SSO portal kantor, sistem akan secara otomatis memberikan hak akses default USER. Untuk mengangkat akun ini menjadi OWNER, silakan tambahkan baris baru di sheet [list user] dengan User ID ini pada Kolom A dan isi Kolom C dengan "OWNER".`
     };
   }, [ssoSimulationId, userList]);
 
@@ -270,13 +270,13 @@ export default function KelolaDataDashboard({
         name: 'Otentikasi Terintegrasi SSO / LDAP',
         module: 'AUTH',
         moduleName: 'Autentikasi & Previlage',
-        sourceSheet: 'Portal madiunjuara.com (SSO/LDAP)',
+        sourceSheet: 'Portal Enterprise SSO / LDAP',
         sourceColumns: 'Form i_userid & i_password via /api/auth/ldap',
         unit: 'Boolean / HTTP Status',
-        formula: 'POST /api/auth/ldap -> Target: http://madiunjuara.com/ (Binary Check: Redirect 302 / Status 200 tanpa pesan error)',
-        currentValue: 'Terintegrasi Aktif (madiunjuara.com)',
+        formula: 'POST /api/auth/ldap -> Target: Server SSO (Binary Check: Redirect 302 / Status 200 tanpa pesan error)',
+        currentValue: 'Terintegrasi Aktif (Enterprise SSO)',
         benchmark: 'Binary Status: 200 / 302 Sukses',
-        description: 'Verifikasi identitas kredensial pegawai kantor secara langsung ke portal SSO madiunjuara.com dengan kebijakan Zero-Credential Storage (password tidak pernah disimpan ke DB/sheet).'
+        description: 'Verifikasi identitas kredensial pegawai kantor secara langsung ke portal SSO dengan kebijakan Zero-Credential Storage (password tidak pernah disimpan ke DB/sheet).'
       },
       {
         code: 'AUTH-05',
@@ -1049,7 +1049,7 @@ export default function KelolaDataDashboard({
               Otorisasi Hak Akses & Logika Autentikasi (Google Sheets vs SSO / LDAP)
             </h2>
             <p className="text-xs text-slate-500 mt-1 max-w-4xl leading-relaxed">
-              Sistem Performance Control Hub mendukung otentikasi ganda: <strong>Login Langsung Database Google Sheets</strong> dan <strong>Login Enterprise SSO / LDAP (madiunjuara.com)</strong>. Bagian ini menjelaskan secara rinci alur verifikasi kredensial, proteksi zero-credential, aturan penentuan status <strong className="text-emerald-700">OWNER</strong> vs <strong className="text-slate-700">USER</strong>, serta tabel akun terdaftar.
+              Sistem Performance Control Hub mendukung otentikasi ganda: <strong>Login Langsung Database Google Sheets</strong> dan <strong>Login Enterprise SSO / LDAP</strong>. Bagian ini menjelaskan secara rinci alur verifikasi kredensial, proteksi zero-credential, aturan penentuan status <strong className="text-emerald-700">OWNER</strong> vs <strong className="text-slate-700">USER</strong>, serta tabel akun terdaftar.
             </p>
           </div>
 
@@ -1087,7 +1087,7 @@ export default function KelolaDataDashboard({
                   <span>Zero-Credential Storage</span>
                 </span>
                 <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono text-slate-400 bg-slate-800/60 px-2 py-0.5 rounded">
-                  Target: http://madiunjuara.com/
+                  Target: Server SSO LDAP
                 </span>
               </div>
               <h3 className="text-lg font-black text-white flex items-center space-x-2 mt-1">
@@ -1100,15 +1100,10 @@ export default function KelolaDataDashboard({
             </div>
 
             <div className="flex items-center space-x-2 self-start lg:self-center">
-              <a
-                href="http://madiunjuara.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition-colors"
-              >
-                <span>Portal SSO madiunjuara.com</span>
-                <ExternalLink className="w-3 h-3 text-slate-400" />
-              </a>
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-800 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700">
+                <Server className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Portal SSO Enterprise</span>
+              </div>
             </div>
           </div>
 
@@ -1159,7 +1154,7 @@ export default function KelolaDataDashboard({
                   <Globe className="w-4 h-4 text-cyan-400" />
                 </div>
                 <h4 className="text-sm font-bold text-white mt-1">
-                  Portal madiunjuara.com
+                  Portal SSO Enterprise
                 </h4>
                 <p className="text-xs text-slate-300 mt-1 leading-relaxed">
                   Digunakan saat memilih tab <strong>"SSO / LDAP"</strong> di layar login.
@@ -1171,7 +1166,7 @@ export default function KelolaDataDashboard({
                   </div>
                   <div className="flex items-start space-x-1.5">
                     <span className="font-mono text-cyan-400 font-bold">•</span>
-                    <span><strong>Binary Verification:</strong> Server melakukan POST form (<code>i_userid</code> & <code>i_password</code>) ke <code>http://madiunjuara.com/</code>. Hanya mengecek status valid/tidaknya (deteksi redirect 302 atau penolakan).</span>
+                    <span><strong>Binary Verification:</strong> Server melakukan POST form (<code>i_userid</code> & <code>i_password</code>) ke server SSO. Hanya mengecek status valid/tidaknya (deteksi redirect 302 atau penolakan).</span>
                   </div>
                   <div className="flex items-start space-x-1.5">
                     <span className="font-mono text-cyan-400 font-bold">•</span>
@@ -1231,7 +1226,7 @@ export default function KelolaDataDashboard({
                 </h4>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Jika ada pimpinan atau rekan kerja yang login menggunakan akun SSO (madiunjuara.com) dan ingin diberi wewenang sebagai <strong>OWNER</strong> agar bisa membuka halaman Kelola Data ini, ikuti langkah berikut:
+                Jika ada pimpinan atau rekan kerja yang login menggunakan akun SSO dan ingin diberi wewenang sebagai <strong>OWNER</strong> agar bisa membuka halaman Kelola Data ini, ikuti langkah berikut:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
                 <div className="bg-slate-850 p-2.5 rounded-lg border border-slate-800">
@@ -1275,7 +1270,7 @@ export default function KelolaDataDashboard({
                   <span className="text-[10px] font-mono text-slate-400">Live Evaluator</span>
                 </div>
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Uji coba status hak akses yang akan diterima User ID jika login melalui portal SSO madiunjuara.com:
+                  Uji coba status hak akses yang akan diterima User ID jika login melalui portal SSO:
                 </p>
                 <div className="mt-2.5 relative">
                   <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />

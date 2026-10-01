@@ -81,7 +81,7 @@ export default function AIEvaluationModal({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [source, setSource] = useState<string>('');
-  const [modelUsed, setModelUsed] = useState<string>('gemini-3.1-flash-lite');
+  const [modelUsed, setModelUsed] = useState<string>('gemini-3.8-flash');
   const [notice, setNotice] = useState<string | null>(null);
   const [generatedAt, setGeneratedAt] = useState<string>('');
   const [showVercelGuide, setShowVercelGuide] = useState<boolean>(false);
@@ -147,7 +147,7 @@ export default function AIEvaluationModal({
       if (data.evaluation) {
         setEvaluation(data.evaluation);
         setSource(data.source || 'gemini');
-        setModelUsed(data.modelUsed || 'gemini-3.1-flash-lite');
+        setModelUsed(data.modelUsed || 'gemini-3.8-flash');
         setNotice(data.notice || null);
         setGeneratedAt(
           new Date().toLocaleTimeString('id-ID', {
@@ -342,12 +342,10 @@ export default function AIEvaluationModal({
                     : 'bg-red-50 text-red-800 border-red-200'
                 }`}>
                   <Cpu className="w-3 h-3" />
-                  {modelUsed === 'gemini-3.1-flash-lite'
-                    ? 'Gemini 3.1 Flash Lite'
-                    : modelUsed === 'gemini-3.8-flash'
+                  {modelUsed === 'gemini-3.8-flash'
                     ? 'Gemini 3.8 Flash'
-                    : modelUsed === 'gemini-flash-latest'
-                    ? 'Gemini Flash'
+                    : modelUsed === 'gemini-3.1-flash-lite'
+                    ? 'Gemini 3.1 Flash Lite'
                     : 'Analisa Operasional Cerdas'}
                 </span>
                 {source && (
