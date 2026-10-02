@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Check,
   Coins,
+  ArrowRight,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -48,6 +49,7 @@ import {
 import { MonthKpiDataset, KpiSectorRow, KpiIndicatorSummaryRow } from '../types/kpiImbalJasa';
 import { KPI_DATASETS, KPI_INDICATOR_SPECS, MONTH_OPTIONS, SPREADSHEET_CONFIG } from '../data/kpiSpreadsheetDatabase';
 import { KpiMonth } from '../lib/kpiSpreadsheetService';
+import ServiceAreaRevenueDetail, { SECTOR_REVENUE_BASE, formatCurrencyIDR } from './ServiceAreaRevenueDetail';
 
 interface KpiImbalJasaAnalyticsProps {
   currentDataset: MonthKpiDataset;
@@ -81,6 +83,7 @@ export default function KpiImbalJasaAnalytics({
   const [selectedServiceAreaFilter, setSelectedServiceAreaFilter] = useState<string>('ALL');
   const [selectedKomboSector, setSelectedKomboSector] = useState<string>('ALL');
   const [radarServiceAreaFilter, setRadarServiceAreaFilter] = useState<string>('ALL');
+  const [selectedDetailServiceArea, setSelectedDetailServiceArea] = useState<string | null>(null);
 
   // 1. ALL BRANCH & SERVICE AREA HISTORICAL TREND DATA (Mei, Juni, Juli, Agustus, September)
   const historicalTrendData = useMemo(() => {
@@ -1336,7 +1339,19 @@ export default function KpiImbalJasaAnalytics({
       )}
 
       {/* VIEW 2: PER SERVICE AREA ANALYSIS */}
-      {viewMode === 'service_area' && (
+      {viewMode === 'service_area' && selectedDetailServiceArea && (
+        <ServiceAreaRevenueDetail
+          serviceArea={selectedDetailServiceArea}
+          currentDataset={currentDataset}
+          selectedBulan={selectedBulan}
+          allServiceAreas={allServiceAreas}
+          onSelectServiceArea={(area) => setSelectedDetailServiceArea(area)}
+          onBack={() => setSelectedDetailServiceArea(null)}
+          onSelectBulan={onSelectBulan}
+        />
+      )}
+
+      {viewMode === 'service_area' && !selectedDetailServiceArea && (
         <div className="space-y-6">
           {/* Main Area Performance Bar Chart */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
@@ -1347,7 +1362,7 @@ export default function KpiImbalJasaAnalytics({
                   <span>Komparasi Performansi Per Service Area ({serviceAreaStats.length} Area)</span>
                 </h4>
                 <p className="text-xs text-slate-500">
-                  Rata-rata nilai performansi gabungan sektor pada masing-masing Service Area di Witel Madiun.
+                  Rata-rata nilai performansi gabungan sektor pada masing-masing Service Area di Witel Madiun. Klik kartu Service Area untuk melihat sub-halaman rincian potensi revenue masing-masing sektor.
                 </p>
               </div>
               <div className="text-xs text-slate-600 font-semibold bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
@@ -1391,60 +1406,86 @@ export default function KpiImbalJasaAnalytics({
               </ResponsiveContainer>
             </div>
 
-            {/* Grid of Service Area Cards */}
+            {/* Grid of Service Area Cards (Clickable to open sub-halaman) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
-              {serviceAreaStats.map((area, idx) => (
-                <div
-                  key={area.serviceArea}
-                  className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3.5 hover:border-red-300 transition"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-                      <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-800 text-[10px] flex items-center justify-center font-bold">
-                        #{idx + 1}
-                      </span>
-                      {area.serviceArea}
-                    </span>
-                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
-                      area.avgPerf >= 95 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                    }`}>
-                      {area.avgPerf}%
-                    </span>
-                  </div>
+              {serviceAreaStats.map((area, idx) => {
+                const sectorsInArea = currentDataset.sectorRows.filter((s) => s.serviceArea === area.serviceArea);
+                const totalSectorPotensiRev = sectorsInArea.reduce(
+                  (acc, s) => acc + (s.perf / 100) * SECTOR_REVENUE_BASE,
+                  0
+                );
 
-                  <div className="mt-2.5 space-y-1 text-2xs text-slate-600">
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Total Sektor:</span>
-                      <strong className="text-slate-700">{area.sektorCount} Sektor</strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Top Sektor:</span>
-                      <strong className="text-slate-900">{area.topSektor.name} ({area.topSektor.perf}%)</strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Rata-rata ASGAR:</span>
-                      <span className="font-semibold text-slate-700">{area.avgAsgar}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Availability:</span>
-                      <span className="font-semibold text-slate-700">{area.avgAvailability}%</span>
-                    </div>
-                    <div className="flex justify-between pt-1 border-t border-slate-200/50">
-                      <span className="text-slate-500 font-semibold">Estimasi Revenue:</span>
-                      <strong className="font-bold text-emerald-700 font-mono text-2xs">
-                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(
-                          Math.round((area.avgPerf / 100) * 233327246)
-                        )}
-                      </strong>
-                    </div>
-                  </div>
+                return (
+                  <div
+                    key={area.serviceArea}
+                    onClick={() => setSelectedDetailServiceArea(area.serviceArea)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        setSelectedDetailServiceArea(area.serviceArea);
+                      }
+                    }}
+                    className="bg-slate-50/90 hover:bg-white border border-slate-200/90 hover:border-red-400 hover:shadow-md rounded-xl p-3.5 transition-all duration-200 cursor-pointer group flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-slate-900 flex items-center gap-1.5 group-hover:text-red-600 transition-colors">
+                          <span className="w-5 h-5 rounded-full bg-slate-200 group-hover:bg-red-100 group-hover:text-red-700 text-slate-800 text-[10px] flex items-center justify-center font-bold">
+                            #{idx + 1}
+                          </span>
+                          {area.serviceArea}
+                        </span>
+                        <span
+                          className={`text-[10px] font-extrabold px-2 py-0.5 rounded ${
+                            area.avgPerf >= 95 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {area.avgPerf}%
+                        </span>
+                      </div>
 
-                  <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-2xs">
-                    <span className="text-slate-400">Status:</span>
-                    <span className="font-bold text-emerald-600">Hak Imbal Jasa Aman</span>
+                      <div className="mt-2.5 space-y-1 text-2xs text-slate-600">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Total Sektor:</span>
+                          <strong className="text-slate-700">{area.sektorCount} Sektor</strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Top Sektor:</span>
+                          <strong className="text-slate-900 truncate max-w-[140px] text-right">
+                            {area.topSektor.name} ({area.topSektor.perf}%)
+                          </strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Rata-rata ASGAR:</span>
+                          <span className="font-semibold text-slate-700">{area.avgAsgar}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Availability:</span>
+                          <span className="font-semibold text-slate-700">{area.avgAvailability}%</span>
+                        </div>
+                        <div className="flex justify-between pt-1 border-t border-slate-200/50">
+                          <span className="text-slate-500 font-semibold">Potensi Rev Sektor:</span>
+                          <strong className="font-bold text-emerald-700 font-mono text-2xs">
+                            {formatCurrencyIDR(totalSectorPotensiRev)}
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-2.5 pt-2 border-t border-slate-200/60 space-y-2">
+                      <div className="flex items-center justify-between text-2xs">
+                        <span className="text-slate-400">Status:</span>
+                        <span className="font-bold text-emerald-600">Hak Imbal Jasa Aman</span>
+                      </div>
+                      <div className="pt-1.5 border-t border-dashed border-slate-200/80 flex items-center justify-between text-2xs font-extrabold text-red-600 group-hover:text-red-700">
+                        <span>Lihat Potensi Revenue Sektor</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -1523,7 +1564,7 @@ export default function KpiImbalJasaAnalytics({
                           &bull; {selectedRadarAreaStats.sektorCount} Sektor (Top: {selectedRadarAreaStats.topSektor.name} {selectedRadarAreaStats.topSektor.perf}%)
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-2xs">
+                      <div className="flex items-center gap-2 text-2xs flex-wrap">
                         <span className="text-slate-500">Rata-rata Performansi:</span>
                         <span
                           className={`font-black px-2 py-0.5 rounded ${
@@ -1534,6 +1575,15 @@ export default function KpiImbalJasaAnalytics({
                         >
                           {selectedRadarAreaStats.avgPerf}%
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDetailServiceArea(selectedRadarAreaStats.serviceArea)}
+                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-2xs font-extrabold transition shadow-2xs cursor-pointer ml-1"
+                        >
+                          <Coins className="w-3 h-3" />
+                          <span>Rincian Revenue Sektor</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </button>
                       </div>
                     </div>
 

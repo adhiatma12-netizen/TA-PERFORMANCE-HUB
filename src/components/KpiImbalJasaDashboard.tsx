@@ -287,13 +287,6 @@ export default function KpiImbalJasaDashboard() {
                 <Award className="w-3.5 h-3.5" />
                 KPI Assurance
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                Spreadsheet: {SPREADSHEET_CONFIG.sheetName}
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                Range: {dataset.range}
-              </span>
             </div>
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
               {dataset.title}
