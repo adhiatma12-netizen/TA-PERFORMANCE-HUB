@@ -12,6 +12,7 @@ import KelolaDataDashboard from './components/KelolaDataDashboard';
 import LoginPage from './components/LoginPage';
 import WelcomePage from './components/WelcomePage';
 import ExecutivePdfReportModal from './components/ExecutivePdfReportModal';
+import SidebarBorderBeam from './components/SidebarBorderBeam';
 import { rawProvisioningData, ProvisioningRow } from './data/provisioningStats';
 import { fallbackIndibizzData } from './data/indibizzFallbackData';
 import { parseCSV } from './lib/googleSheets';
@@ -628,17 +629,20 @@ export default function App() {
 
         {/* SIDEBAR NAVIGATION (EXPANDED OR COLLAPSED ICON RAIL) */}
         <aside
-          className={`${
+          className={`relative ${
             isSidebarOpen ? 'w-80' : 'w-[70px]'
-          } bg-[#e8edf4] border-r border-slate-300 shadow-xs shrink-0 flex flex-col sticky top-[69px] h-[calc(100vh-69px)] z-30 transition-all duration-300 ease-in-out`}
+          } bg-slate-100 border-r border-slate-300 shadow-xs shrink-0 flex flex-col sticky top-[69px] h-[calc(100vh-69px)] z-30 transition-all duration-300 ease-in-out`}
           id="sidebar-navigation"
           onMouseEnter={resetAutoHideTimer}
           onMouseMove={resetAutoHideTimer}
           onMouseLeave={resetAutoHideTimer}
           onClick={resetAutoHideTimer}
         >
+          {/* Animasi Garis Merah Laser Berjalan di Outerline Kanan Sidebar */}
+          <SidebarBorderBeam />
+
           {/* Sidebar Top Header with Arrow Button to HIDE or UNHIDE (Cukup Tanda Panah Saja) */}
-          <div className={`p-3 border-b border-slate-300/80 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'} bg-slate-200/80 sticky top-0 z-10 backdrop-blur-xs min-h-[57px]`}>
+          <div className={`p-3 border-b border-slate-200/90 flex items-center ${isSidebarOpen ? 'justify-between' : 'justify-center'} bg-slate-200/50 sticky top-0 z-10 backdrop-blur-xs min-h-[57px]`}>
             {isSidebarOpen && (
               <div className="flex items-center space-x-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
@@ -1326,7 +1330,7 @@ export default function App() {
           )}
 
           {/* Sidebar Quick Footer Info */}
-          <div className="p-3 border-t border-slate-300/80 bg-slate-200/70 mt-auto text-[11px] text-slate-600">
+          <div className="p-3 border-t border-slate-200/90 bg-slate-200/50 mt-auto text-[11px] text-slate-600">
             {isSidebarOpen ? (
               <div className="flex items-center justify-between font-mono text-[10px]">
                 <span className="text-slate-500 font-semibold">Telkom Akses</span>
